@@ -1,0 +1,15 @@
+{
+  "name": "onedocs",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  },
+  "dependencies": {
+    "marked": "^12.0.2"
+  }
+}

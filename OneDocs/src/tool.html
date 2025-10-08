@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一文亦闻 - 工具页</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="tool-container">
+        <header class="tool-header">
+            <h1 class="tool-title">一文亦闻</h1>
+            <button id="settingsBtn" class="settings-btn">⚙️ 格物致知</button>
+        </header>
+        
+        <main class="tool-main">
+            <div class="chat-area">
+                <div id="resultArea" class="result-area">
+                    <div class="welcome-message">
+                        <h3>理工速知</h3>
+                        <p>已选中「理工速知」功能，请上传文档开始分析。</p>
+                    </div>
+                </div>
+                
+                <div class="upload-section">
+                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+                    <button id="uploadBtn" class="upload-btn">📁 置入一文</button>
+                </div>
+                
+                <div class="function-section">
+                    <h4 class="function-title">选择功能</h4>
+                    <div class="function-buttons">
+                        <button class="function-btn active" onclick="selectFunction('lg')">理工速知</button>
+                        <button class="function-btn" onclick="selectFunction('news')">要闻概览</button>
+                        <button class="function-btn" onclick="selectFunction('data')">罗森析数</button>
+                        <button class="function-btn" onclick="selectFunction('arts')">文采丰呈</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 设置模态框 -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>格物致知</h2>
+                <span class="close-btn" id="closeBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="apiKey">API 密钥</label>
+                    <input type="password" id="apiKey" placeholder="请输入您的 OpenAI API 密钥">
+                </div>
+                <div class="input-group">
+                    <label for="apiBaseUrl">接口地址（可选）</label>
+                    <input type="text" id="apiBaseUrl" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveSettingsBtn" class="save-btn">惠存配置</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

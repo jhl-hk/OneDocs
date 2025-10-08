@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>测试页面</title>
+    <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>测试按钮功能</h1>
+        <div class="functions">
+            <button class="function-btn active" data-id="lg">理工速知</button>
+            <button class="function-btn" data-id="news">要闻概览</button>
+            <button class="function-btn" data-id="data">罗森析数</button>
+            <button class="function-btn" data-id="arts">文采丰呈</button>
+        </div>
+        <div id="testResult"></div>
+    </div>
+
+    <script>
+        // 测试按钮功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const btns = document.querySelectorAll('.function-btn');
+            const result = document.getElementById('testResult');
+            
+            console.log('找到按钮数量：', btns.length);
+            
+            btns.forEach((btn, index) => {
+                console.log(`按钮 ${index}:`, btn.dataset.id, btn.textContent);
+                btn.addEventListener('click', () => {
+                    console.log('按钮被点击：', btn.dataset.id);
+                    result.innerHTML = `点击了：${btn.textContent} (${btn.dataset.id})`;
+                    
+                    // 更新活跃状态
+                    btns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
