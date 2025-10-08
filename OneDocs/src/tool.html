@@ -7,37 +7,89 @@
     <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-    <div class="tool-container">
-        <header class="tool-header">
-            <h1 class="tool-title">一文亦闻</h1>
-            <button id="settingsBtn" class="settings-btn">⚙️ 格物致知</button>
-        </header>
-        
-        <main class="tool-main">
-            <div class="chat-area">
-                <div id="resultArea" class="result-area">
-                    <div class="welcome-message">
-                        <h3>理工速知</h3>
-                        <p>已选中「理工速知」功能，请上传文档开始分析。</p>
+    <div class="app-layout">
+        <!-- 左侧边栏 -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">功能选择</h2>
+                <button id="sidebarToggle" class="sidebar-toggle">◀</button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="function-list">
+                    <button class="function-item active" onclick="selectFunction('lg')" data-function="lg">
+                        <div class="function-icon">📚</div>
+                        <div class="function-info">
+                            <span class="function-name">理工速知</span>
+                            <span class="function-desc">理工科课件整理</span>
+                        </div>
+                        <div class="function-status available">可用</div>
+                    </button>
+                    
+                    <button class="function-item" onclick="selectFunction('news')" data-function="news">
+                        <div class="function-icon">📰</div>
+                        <div class="function-info">
+                            <span class="function-name">要闻概览</span>
+                            <span class="function-desc">新闻概要分析</span>
+                        </div>
+                        <div class="function-status unavailable">暂未推行</div>
+                    </button>
+                    
+                    <button class="function-item" onclick="selectFunction('data')" data-function="data">
+                        <div class="function-icon">📊</div>
+                        <div class="function-info">
+                            <span class="function-name">罗森析数</span>
+                            <span class="function-desc">数据表现分析</span>
+                        </div>
+                        <div class="function-status unavailable">暂未推行</div>
+                    </button>
+                    
+                    <button class="function-item" onclick="selectFunction('arts')" data-function="arts">
+                        <div class="function-icon">📖</div>
+                        <div class="function-info">
+                            <span class="function-name">文采丰呈</span>
+                            <span class="function-desc">社科文学整理</span>
+                        </div>
+                        <div class="function-status unavailable">暂未推行</div>
+                    </button>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <!-- 顶部工具栏 -->
+            <header class="toolbar">
+                <div class="toolbar-left">
+                    <h1 class="app-title">一文亦闻</h1>
+                    <div class="file-info" id="fileInfo" style="display: none;">
+                        <span class="file-name" id="fileName">未选择文件</span>
+                        <span class="file-size" id="fileSize"></span>
                     </div>
                 </div>
                 
-                <div class="upload-section">
-                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display: none;">
-                    <button id="uploadBtn" class="upload-btn">📁 置入一文</button>
+                <div class="toolbar-right">
+                    <button id="uploadBtn" class="toolbar-btn upload-btn">📁 选择文档</button>
+                    <button id="analyzeBtn" class="toolbar-btn analyze-btn" disabled>🚀 开始分析</button>
+                    <button id="settingsBtn" class="toolbar-btn settings-btn">⚙️ 设置</button>
                 </div>
-                
-                <div class="function-section">
-                    <h4 class="function-title">选择功能</h4>
-                    <div class="function-buttons">
-                        <button class="function-btn active" onclick="selectFunction('lg')">理工速知</button>
-                        <button class="function-btn" onclick="selectFunction('news')">要闻概览</button>
-                        <button class="function-btn" onclick="selectFunction('data')">罗森析数</button>
-                        <button class="function-btn" onclick="selectFunction('arts')">文采丰呈</button>
+            </header>
+
+            <!-- 结果显示区域 -->
+            <div class="content-area">
+                <div id="resultArea" class="result-display">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">📚</div>
+                        <h3>理工速知</h3>
+                        <p>已选中「理工速知」功能</p>
+                        <p>请选择文档并点击开始分析</p>
                     </div>
                 </div>
             </div>
         </main>
+
+        <!-- 隐藏的文件输入 -->
+        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display: none;">
     </div>
 
     <!-- 设置模态框 -->

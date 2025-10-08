@@ -2,13 +2,15 @@
 let currentFunction = 'lg';
 let apiKey = '';
 let apiBaseUrl = 'https://api.openai.com/v1';
+let selectedFile = null;
+let sidebarCollapsed = false;
 
 // 功能配置
 const functions = {
-    'lg': { name: '理工速知', available: true },
-    'news': { name: '要闻概览', available: false },
-    'data': { name: '罗森析数', available: false },
-    'arts': { name: '文采丰呈', available: false }
+    'lg': { name: '理工速知', icon: '📚', desc: '理工科课件整理', available: true },
+    'news': { name: '要闻概览', icon: '📰', desc: '新闻概要分析', available: false },
+    'data': { name: '罗森析数', icon: '📊', desc: '数据表现分析', available: false },
+    'arts': { name: '文采丰呈', icon: '📖', desc: '社科文学整理', available: false }
 };
 
 // 页面加载完成后初始化
@@ -27,6 +29,7 @@ function initializeApp() {
     
     // 更新UI状态
     updateFunctionDisplay();
+    updateAnalyzeButton();
     
     console.log('应用初始化完成');
 }
@@ -51,6 +54,12 @@ function loadSettings() {
 
 // 绑定事件监听器
 function bindEventListeners() {
+    // 侧边栏折叠按钮
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', toggleSidebar);
+    }
+    
     // 设置按钮
     const settingsBtn = document.getElementById('settingsBtn');
     if (settingsBtn) {
@@ -73,14 +82,21 @@ function bindEventListeners() {
     const uploadBtn = document.getElementById('uploadBtn');
     if (uploadBtn) {
         uploadBtn.addEventListener('click', function() {
+            console.log('点击选择文档按钮');
             document.getElementById('fileInput').click();
         });
+    }
+    
+    // 分析按钮
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', startAnalysis);
     }
     
     // 文件输入
     const fileInput = document.getElementById('fileInput');
     if (fileInput) {
-        fileInput.addEventListener('change', handleFileUpload);
+        fileInput.addEventListener('change', handleFileSelection);
     }
     
     // 点击模态框外部关闭
@@ -96,23 +112,38 @@ function bindEventListeners() {
     console.log('事件监听器绑定完成');
 }
 
+// 侧边栏折叠切换
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebarCollapsed = !sidebarCollapsed;
+    
+    if (sidebarCollapsed) {
+        sidebar.classList.add('collapsed');
+    } else {
+        sidebar.classList.remove('collapsed');
+    }
+    
+    console.log('侧边栏状态：', sidebarCollapsed ? '折叠' : '展开');
+}
+
 // 功能选择
 function selectFunction(functionId) {
     console.log('选择功能：', functionId);
     
     currentFunction = functionId;
     
-    // 更新按钮状态
-    const buttons = document.querySelectorAll('.function-btn');
-    buttons.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.getAttribute('onclick').includes(functionId)) {
-            btn.classList.add('active');
+    // 更新侧边栏按钮状态
+    const functionItems = document.querySelectorAll('.function-item');
+    functionItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-function') === functionId) {
+            item.classList.add('active');
         }
     });
     
     // 更新显示
     updateFunctionDisplay();
+    updateAnalyzeButton();
 }
 
 // 更新功能显示
@@ -125,8 +156,10 @@ function updateFunctionDisplay() {
     if (func.available) {
         resultArea.innerHTML = `
             <div class="welcome-message">
+                <div class="welcome-icon">${func.icon}</div>
                 <h3>${func.name}</h3>
-                <p>已选中「${func.name}」功能，请上传文档开始分析。</p>
+                <p>已选中「${func.name}」功能</p>
+                <p>请选择文档并点击开始分析</p>
             </div>
         `;
     } else {
@@ -136,6 +169,30 @@ function updateFunctionDisplay() {
                 <p>此功能暂未推行，敬请期待后续更新。</p>
             </div>
         `;
+    }
+}
+
+// 更新分析按钮状态
+function updateAnalyzeButton() {
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    if (!analyzeBtn) return;
+    
+    const canAnalyze = selectedFile && functions[currentFunction].available && apiKey;
+    
+    analyzeBtn.disabled = !canAnalyze;
+    
+    if (canAnalyze) {
+        analyzeBtn.textContent = '🚀 开始分析';
+        analyzeBtn.title = '点击开始分析文档';
+    } else if (!selectedFile) {
+        analyzeBtn.textContent = '📄 请选择文档';
+        analyzeBtn.title = '请先选择要分析的文档';
+    } else if (!functions[currentFunction].available) {
+        analyzeBtn.textContent = '⏳ 功能未推行';
+        analyzeBtn.title = '当前功能暂未推行';
+    } else if (!apiKey) {
+        analyzeBtn.textContent = '⚙️ 请配置API';
+        analyzeBtn.title = '请先在设置中配置API密钥';
     }
 }
 
@@ -169,51 +226,116 @@ function saveSettings() {
     localStorage.setItem('onedocs_api_key', apiKey);
     localStorage.setItem('onedocs_api_base_url', apiBaseUrl);
     
+    // 更新分析按钮状态
+    updateAnalyzeButton();
+    
     alert('设置已保存！');
     closeSettings();
     
-    console.log('设置已保存');
+    console.log('设置已保存, API Key:', apiKey ? '已配置' : '未配置');
 }
 
-// 处理文件上传
-async function handleFileUpload(event) {
+// 处理文件选择
+function handleFileSelection(event) {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file) {
+        selectedFile = null;
+        hideFileInfo();
+        updateAnalyzeButton();
+        return;
+    }
     
-    console.log('文件上传：', file.name, file.type);
+    selectedFile = file;
+    console.log('文件选择：', file.name, file.type, file.size);
     
-    // 检查API Key
+    // 显示文件信息
+    showFileInfo(file);
+    
+    // 更新按钮状态
+    updateAnalyzeButton();
+}
+
+// 显示文件信息
+function showFileInfo(file) {
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    
+    if (fileInfo && fileName && fileSize) {
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        fileInfo.style.display = 'flex';
+    }
+}
+
+// 隐藏文件信息
+function hideFileInfo() {
+    const fileInfo = document.getElementById('fileInfo');
+    if (fileInfo) {
+        fileInfo.style.display = 'none';
+    }
+}
+
+// 格式化文件大小
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// 开始分析
+async function startAnalysis() {
+    if (!selectedFile) {
+        alert('请先选择要分析的文档');
+        return;
+    }
+    
     if (!apiKey) {
         alert('请先在设置中配置 API 密钥');
         openSettings();
         return;
     }
     
-    // 检查功能可用性
     if (!functions[currentFunction].available) {
         alert('此功能暂未推行，敬请期待');
         return;
     }
     
+    console.log('开始分析文档：', selectedFile.name);
+    
     // 显示加载状态
     const resultArea = document.getElementById('resultArea');
     resultArea.innerHTML = `
-        <div class="loading-message" style="text-align: center; padding: 3rem;">
+        <div class="loading-message" style="text-align: center; padding: 4rem;">
+            <div class="loading-icon" style="font-size: 3rem; margin-bottom: 1rem;">🤔</div>
             <h3>正在潜心分析...</h3>
-            <p>请稍候，AI 正在解析您的文档</p>
-            <div class="loading-spinner" style="margin: 2rem auto; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p>AI 正在仔细解析您的文档内容</p>
+            <div class="progress-bar" style="width: 100%; height: 4px; background: #ecf0f1; border-radius: 2px; margin: 2rem 0; overflow: hidden;">
+                <div class="progress-fill" style="height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); width: 0%; border-radius: 2px; animation: progress 3s ease-in-out infinite;"></div>
+            </div>
+            <p style="color: #7f8c8d; font-size: 0.9rem;">请耐心等待，复杂文档可能需要更多时间</p>
         </div>
         <style>
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
         }
         </style>
     `;
     
+    // 禁用分析按钮
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    if (analyzeBtn) {
+        analyzeBtn.disabled = true;
+        analyzeBtn.textContent = '🔄 分析中...';
+    }
+    
     try {
         // 读取文件内容
-        const content = await readFileContent(file);
+        const content = await readFileContent(selectedFile);
         console.log('文件内容读取完成，长度：', content.length);
         
         // 分析内容
@@ -223,14 +345,19 @@ async function handleFileUpload(event) {
         displayResult(result);
         
     } catch (error) {
-        console.error('处理文件时出错:', error);
+        console.error('分析文档时出错:', error);
         resultArea.innerHTML = `
-            <div class="error-message" style="background: #fee; border: 2px solid #fcc; padding: 2rem; border-radius: 10px; color: #c33;">
+            <div class="error-message" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52); color: white; padding: 2rem; border-radius: 15px; text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
                 <h3>分析失败</h3>
                 <p>处理文档时发生错误：${error.message}</p>
-                <p>请检查文件格式或网络连接。</p>
+                <p>请检查文件格式、网络连接或 API 配置。</p>
+                <button onclick="startAnalysis()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 0.5rem 1rem; border-radius: 8px; margin-top: 1rem; cursor: pointer;">重试</button>
             </div>
         `;
+    } finally {
+        // 恢复分析按钮
+        updateAnalyzeButton();
     }
 }
 
