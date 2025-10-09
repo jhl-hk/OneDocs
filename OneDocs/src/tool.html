@@ -148,22 +148,34 @@
             </div>
             <div class="modal-body">
                 <div class="setting-item">
-                    <label for="baseUrl">API Base URL</label>
-                    <input type="text" id="baseUrl" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
-                    <small>API服务器地址，默认为OpenAI官方地址</small>
+                    <label for="providerSelect">模型库选择</label>
+                    <select id="providerSelect" onchange="onProviderChange()">
+                        <option value="openai" selected>OpenAI</option>
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="glm">智谱GLM</option>
+                        <option value="aistudio">飞桨AI Studio</option>
+                    </select>
+                    <small>选择您要使用的AI模型提供商</small>
                 </div>
                 <div class="setting-item">
-                    <label for="apiKey">OpenAI API Key</label>
+                    <label for="baseUrl">API Base URL</label>
+                    <input type="text" id="baseUrl" placeholder="https://api.openai.com/v1">
+                    <small id="baseUrlHint">API服务器地址，默认为OpenAI官方地址</small>
+                </div>
+                <div class="setting-item">
+                    <label for="apiKey" id="apiKeyLabel">API Key</label>
                     <input type="password" id="apiKey" placeholder="输入你的API密钥">
-                    <small>需要填入有效的OpenAI API密钥方可使用</small>
+                    <small id="apiKeyHint">需要填入有效的API密钥方可使用</small>
                 </div>
                 <div class="setting-item">
                     <label for="modelSelect">选择模型</label>
                     <select id="modelSelect">
                         <option value="gpt-4o" selected>GPT-4o</option>
+                        <option value="gpt-4o-mini">GPT-4o-mini</option>
                         <option value="gpt-4">GPT-4</option>
                         <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
                     </select>
+                    <small id="modelHint">根据您的需求选择合适的AI模型</small>
                 </div>
             </div>
             <div class="modal-footer">

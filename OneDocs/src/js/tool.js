@@ -4,6 +4,71 @@ let currentFile = null;
 let selectedFunction = 'science'; // 默认选择理工速知
 let isAnalyzing = false;
 
+// 模型库配置
+const MODEL_PROVIDERS = {
+    openai: {
+        name: 'OpenAI',
+        baseUrl: 'https://api.openai.com/v1',
+        endpoint: '/chat/completions',
+        models: [
+            { value: 'gpt-4o', name: 'GPT-4o' },
+            { value: 'gpt-4o-mini', name: 'GPT-4o-mini' },
+            { value: 'gpt-4', name: 'GPT-4' },
+            { value: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo' }
+        ],
+        defaultModel: 'gpt-4o',
+        keyLabel: 'OpenAI API Key',
+        keyHint: '需要填入有效的OpenAI API密钥方可使用',
+        baseUrlHint: 'API服务器地址，默认为OpenAI官方地址'
+    },
+    deepseek: {
+        name: 'DeepSeek',
+        baseUrl: 'https://api.deepseek.com',
+        endpoint: '/chat/completions',
+        models: [
+            { value: 'deepseek-chat', name: 'DeepSeek-Chat' },
+            { value: 'deepseek-reasoner', name: 'DeepSeek-Reasoner' }
+        ],
+        defaultModel: 'deepseek-chat',
+        keyLabel: 'DeepSeek API Key',
+        keyHint: '需要填入有效的DeepSeek API密钥方可使用',
+        baseUrlHint: 'DeepSeek API服务器地址'
+    },
+    glm: {
+        name: '智谱GLM',
+        baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+        endpoint: '/chat/completions',
+        models: [
+            { value: 'glm-4-flash', name: 'GLM-4-Flash' },
+            { value: 'glm-4-air', name: 'GLM-4-Air' },
+            { value: 'glm-4', name: 'GLM-4' }
+        ],
+        defaultModel: 'glm-4-flash',
+        keyLabel: '智谱 API Key',
+        keyHint: '需要填入有效的智谱API密钥方可使用',
+        baseUrlHint: '智谱GLM API服务器地址'
+    },
+    aistudio: {
+        name: '飞桨AI Studio',
+        baseUrl: 'https://aistudio.baidu.com/llm/lmapi/v3',
+        endpoint: '/chat/completions',
+        models: [
+            { value: 'ernie-4.5-turbo-vl', name: 'ERNIE-4.5-Turbo-VL' },
+            { value: 'ernie-4.5-21b-a3b', name: 'ERNIE-4.5-21B-A3B' },
+            { value: 'kimi-k2-instruct', name: 'Kimi-K2-Instruct' },
+            { value: 'deepseek-v3', name: 'DeepSeek-V3' },
+            { value: 'deepseek-r1', name: 'DeepSeek-R1' },
+            { value: 'qwen3-235b-a22b', name: 'Qwen3-235B-A22B' },
+            { value: 'qwen3-30b-a3b', name: 'Qwen3-30B-A3B' },
+            { value: 'qwq-32b', name: 'QwQ-32B' }
+        ],
+        defaultModel: 'ernie-4.5-21b-a3b',
+        keyLabel: '飞桨 API Key',
+        keyHint: '需要填入有效的飞桨AI Studio API密钥',
+        baseUrlHint: '飞桨AI Studio API服务器地址'
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // 验证提示词配置是否加载完成
     setTimeout(() => {
@@ -262,7 +327,10 @@ function updateAnalyzeButton() {
     const analyzeButton = document.getElementById('analyzeButtonMini');
     const hasFile = currentFile !== null;
     const hasValidFunction = ['science', 'liberal', 'data', 'news'].includes(selectedFunction);
-    const hasApiKey = localStorage.getItem('openai_api_key');
+    
+    // 检查当前提供商的API Key
+    const currentProvider = localStorage.getItem('current_provider') || 'openai';
+    const hasApiKey = localStorage.getItem(`${currentProvider}_api_key`);
     
     if (analyzeButton) {
         if (hasFile && hasValidFunction && hasApiKey) {
@@ -281,9 +349,12 @@ async function analyzeDocument() {
         return;
     }
     
-    const apiKey = localStorage.getItem('openai_api_key');
+    // 获取当前提供商和对应的API Key
+    const currentProvider = localStorage.getItem('current_provider') || 'openai';
+    const apiKey = localStorage.getItem(`${currentProvider}_api_key`);
     if (!apiKey) {
-        showToast('请先在设置中配置 OpenAI API Key');
+        const providerName = MODEL_PROVIDERS[currentProvider]?.name || currentProvider;
+        showToast(`请先在设置中配置 ${providerName} API Key`);
         openSettings();
         return;
     }
@@ -314,8 +385,8 @@ async function analyzeDocument() {
         const systemPrompt = loadSystemPrompt(selectedFunction);
         updateProgress(70, '正在处理分析请求...');
         
-        // 调用OpenAI API
-        const result = await callOpenAI(systemPrompt, fileContent, apiKey);
+        // 调用AI API
+        const result = await callAI(systemPrompt, fileContent, currentProvider, apiKey);
         updateProgress(90, '分析完成，正在渲染结果...');
         
         // 显示结果
@@ -469,41 +540,94 @@ function loadSystemPrompt(functionType) {
     }
 }
 
-// 调用OpenAI API
-async function callOpenAI(systemPrompt, content, apiKey) {
-    const model = localStorage.getItem('openai_model') || 'gpt-4o';
-    const baseUrl = localStorage.getItem('openai_base_url') || 'https://api.openai.com/v1';
+// 调用AI API（支持多个提供商）
+async function callAI(systemPrompt, content, provider, apiKey) {
+    const config = MODEL_PROVIDERS[provider];
+    if (!config) {
+        throw new Error(`不支持的模型提供商: ${provider}`);
+    }
     
-    const response = await fetch(`${baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-            model: model,
-            messages: [
-                {
-                    role: 'system',
-                    content: systemPrompt
-                },
-                {
-                    role: 'user',
-                    content: `请分析以下文档内容：\n\n${content}`
-                }
-            ],
-            temperature: 0.7,
-            max_tokens: 4000
-        })
-    });
+    const model = localStorage.getItem(`${provider}_model`) || config.defaultModel;
+    const baseUrl = localStorage.getItem(`${provider}_base_url`) || config.baseUrl;
+    
+    // 构建完整的API端点
+    const apiUrl = config.endpoint ? `${baseUrl}${config.endpoint}` : baseUrl;
+    
+    // 构建请求头
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    
+    // 根据不同提供商设置认证头
+    headers['Authorization'] = `Bearer ${apiKey}`;
+    
+    // 构建请求体
+    const requestBody = {
+        model: model,
+        messages: [
+            {
+                role: 'system',
+                content: systemPrompt
+            },
+            {
+                role: 'user',
+                content: `请分析以下文档内容：\n\n${content}`
+            }
+        ],
+        temperature: 0.7
+    };
+    
+    // 根据不同提供商调整参数
+    if (provider === 'openai' || provider === 'deepseek' || provider === 'aistudio') {
+        requestBody.max_tokens = 4000;
+    } else if (provider === 'glm') {
+        requestBody.max_tokens = 4000;
+        requestBody.top_p = 0.7;
+    }
+    
+    console.log(`调用 ${config.name} API:`, apiUrl);
+    console.log('请求头:', headers);
+    console.log('请求体:', requestBody);
+    
+    let response;
+    try {
+        response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(requestBody)
+        });
+    } catch (fetchError) {
+        console.error('Fetch请求失败:', fetchError);
+        throw new Error(`网络请求失败: ${fetchError.message}`);
+    }
     
     if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'API调用失败');
+        let errorMessage = `${config.name} API调用失败 (${response.status})`;
+        try {
+            const errorData = await response.json();
+            console.error('API错误响应:', errorData);
+            errorMessage = errorData.error?.message || errorData.message || errorData.detail || errorMessage;
+        } catch (e) {
+            errorMessage += `: ${response.statusText}`;
+            console.error('解析错误响应失败:', e);
+        }
+        throw new Error(errorMessage);
     }
     
     const data = await response.json();
+    
+    // 检查响应格式
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        console.error('API响应格式异常:', data);
+        throw new Error('API响应格式异常，请检查模型配置');
+    }
+    
     return data.choices[0].message.content;
+}
+
+// 保留原函数名以兼容性（已弃用）
+async function callOpenAI(systemPrompt, content, apiKey) {
+    return callAI(systemPrompt, content, 'openai', apiKey);
 }
 
 // 显示结果
@@ -1013,19 +1137,74 @@ function goBack() {
     }, 300);
 }
 
+// 模型库切换事件处理
+function onProviderChange() {
+    const provider = document.getElementById('providerSelect').value;
+    const config = MODEL_PROVIDERS[provider];
+    
+    if (!config) return;
+    
+    // 更新界面元素
+    document.getElementById('baseUrl').value = config.baseUrl;
+    document.getElementById('baseUrl').placeholder = config.baseUrl;
+    document.getElementById('baseUrlHint').textContent = config.baseUrlHint;
+    document.getElementById('apiKeyLabel').textContent = config.keyLabel;
+    document.getElementById('apiKeyHint').textContent = config.keyHint;
+    
+    // 更新模型选择
+    updateModelOptions(provider);
+    
+    // 加载对应提供商的设置
+    loadProviderSettings(provider);
+}
+
+// 更新模型选择选项
+function updateModelOptions(provider) {
+    const modelSelect = document.getElementById('modelSelect');
+    const config = MODEL_PROVIDERS[provider];
+    
+    // 清空现有选项
+    modelSelect.innerHTML = '';
+    
+    // 添加新的模型选项
+    config.models.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.value;
+        option.textContent = model.name;
+        if (model.value === config.defaultModel) {
+            option.selected = true;
+        }
+        modelSelect.appendChild(option);
+    });
+}
+
+// 加载指定提供商的设置
+function loadProviderSettings(provider) {
+    const baseUrlInput = document.getElementById('baseUrl');
+    const apiKeyInput = document.getElementById('apiKey');
+    const modelSelect = document.getElementById('modelSelect');
+    
+    // 从localStorage加载设置，使用提供商前缀
+    const baseUrl = localStorage.getItem(`${provider}_base_url`) || MODEL_PROVIDERS[provider].baseUrl;
+    const apiKey = localStorage.getItem(`${provider}_api_key`) || '';
+    const model = localStorage.getItem(`${provider}_model`) || MODEL_PROVIDERS[provider].defaultModel;
+    
+    baseUrlInput.value = baseUrl;
+    apiKeyInput.value = apiKey;
+    modelSelect.value = model;
+}
+
 // 打开设置
 function openSettings() {
     const modal = document.getElementById('settingsModal');
     modal.style.display = 'flex';
     
-    // 加载当前设置
-    const baseUrlInput = document.getElementById('baseUrl');
-    const apiKeyInput = document.getElementById('apiKey');
-    const modelSelect = document.getElementById('modelSelect');
+    // 加载当前选择的提供商
+    const currentProvider = localStorage.getItem('current_provider') || 'openai';
+    document.getElementById('providerSelect').value = currentProvider;
     
-    baseUrlInput.value = localStorage.getItem('openai_base_url') || 'https://api.openai.com/v1';
-    apiKeyInput.value = localStorage.getItem('openai_api_key') || '';
-    modelSelect.value = localStorage.getItem('openai_model') || 'gpt-4o';
+    // 触发提供商切换以加载相应设置
+    onProviderChange();
 }
 
 // 关闭设置
@@ -1036,6 +1215,7 @@ function closeSettings() {
 
 // 保存设置
 function saveSettings() {
+    const provider = document.getElementById('providerSelect').value;
     const baseUrl = document.getElementById('baseUrl').value.trim();
     const apiKey = document.getElementById('apiKey').value.trim();
     const model = document.getElementById('modelSelect').value;
@@ -1050,12 +1230,16 @@ function saveSettings() {
         return;
     }
     
-    localStorage.setItem('openai_base_url', baseUrl);
-    localStorage.setItem('openai_api_key', apiKey);
-    localStorage.setItem('openai_model', model);
+    // 保存当前提供商
+    localStorage.setItem('current_provider', provider);
+    
+    // 保存提供商特定的设置
+    localStorage.setItem(`${provider}_base_url`, baseUrl);
+    localStorage.setItem(`${provider}_api_key`, apiKey);
+    localStorage.setItem(`${provider}_model`, model);
     
     closeSettings();
-    showToast('设置已保存');
+    showToast(`${MODEL_PROVIDERS[provider].name} 设置已保存`);
     updateAnalyzeButton();
 }
 

@@ -981,6 +981,8 @@ body {
     border-radius: var(--border-radius);
     width: 90%;
     max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
     animation: slideInScale 0.3s ease-out;
 }
 
@@ -1037,6 +1039,45 @@ body {
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
+}
+
+/* 为select下拉框添加滚动条样式 */
+.setting-item select {
+    max-height: 200px;
+    overflow-y: auto;
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
+    appearance: menulist;
+}
+
+/* 自定义select选项在打开时的最大高度 */
+.setting-item select option {
+    padding: 0.5rem;
+    font-size: 0.95rem;
+}
+
+/* 为模型选择框特别设置 */
+#modelSelect {
+    max-height: 150px;
+}
+
+/* 滚动条样式优化 */
+.setting-item select::-webkit-scrollbar {
+    width: 8px;
+}
+
+.setting-item select::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.setting-item select::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 4px;
+}
+
+.setting-item select::-webkit-scrollbar-thumb:hover {
+    background: #357abd;
 }
 
 .setting-item input:focus,
