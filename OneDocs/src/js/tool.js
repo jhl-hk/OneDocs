@@ -60,8 +60,16 @@ function initializeEventListeners() {
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     
+    console.log('初始化事件监听器，uploadArea:', uploadArea);
+    
+    if (!uploadArea) {
+        console.error('未找到uploadArea元素！');
+        return;
+    }
+    
     // 文件上传区域点击
     uploadArea.addEventListener('click', function() {
+        console.log('上传区域被点击');
         if (document.getElementById('filePreview').style.display !== 'block') {
             fileInput.click();
         }
@@ -70,10 +78,22 @@ function initializeEventListeners() {
     // 文件选择
     fileInput.addEventListener('change', handleFileSelect);
     
-    // 拖拽上传
-    uploadArea.addEventListener('dragover', handleDragOver);
-    uploadArea.addEventListener('dragleave', handleDragLeave);
-    uploadArea.addEventListener('drop', handleFileDrop);
+    // 禁用拖拽功能，只保留点击选择
+    console.log('拖拽功能已禁用，仅支持点击选择文件');
+    
+    // 防止整个页面接受拖拽文件，避免意外行为
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        document.addEventListener(eventName, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+    
+    // 检查是否需要隐藏格式说明
+    checkFormatNoticeVisibility();
+    
+    // 添加点击选择提示
+    showToast('文件上传区域已就绪，点击选择文件');
     
     // 检查分析按钮状态
     updateAnalyzeButton();
@@ -87,30 +107,19 @@ function handleFileSelect(event) {
     }
 }
 
-// 处理拖拽悬停
-function handleDragOver(event) {
-    event.preventDefault();
-    event.currentTarget.classList.add('dragover');
-}
-
-// 处理拖拽离开
-function handleDragLeave(event) {
-    event.currentTarget.classList.remove('dragover');
-}
-
-// 处理文件拖放
-function handleFileDrop(event) {
-    event.preventDefault();
-    event.currentTarget.classList.remove('dragover');
-    
-    const files = event.dataTransfer.files;
-    if (files.length > 0) {
-        processFile(files[0]);
-    }
-}
+// 拖拽功能已禁用，相关处理函数已移除
 
 // 处理文件
 function processFile(file) {
+    console.log('processFile 函数开始执行');
+    console.log('传入的文件对象:', file);
+    
+    if (!file) {
+        console.error('processFile: 传入的文件对象为空');
+        showToast('文件对象无效，请重试');
+        return;
+    }
+    
     // 检查文件类型
     const allowedTypes = [
         'application/pdf',
@@ -119,10 +128,16 @@ function processFile(file) {
         'text/plain'
     ];
     
+    console.log('文件类型检查:', file.type);
+    console.log('允许的类型:', allowedTypes);
+    
     if (!allowedTypes.includes(file.type)) {
-        showToast('暂不支持此文件格式，请选择 PDF、Word 或 TXT 文件');
+        console.log('文件类型不被支持:', file.type);
+        showToast(`暂不支持此文件格式 (${file.type})，请选择 PDF、Word 或 TXT 文件`);
         return;
     }
+    
+    console.log('文件类型验证通过');
     
     // 检查文件大小 (限制为10MB)
     if (file.size > 10 * 1024 * 1024) {
@@ -149,20 +164,46 @@ function processFile(file) {
         showToast(fileTypeHint);
     }
     
+    console.log('设置 currentFile:', file);
     currentFile = file;
+    
+    console.log('调用 showFilePreview...');
     showFilePreview(file);
+    
+    console.log('调用 updateAnalyzeButton...');
     updateAnalyzeButton();
 }
 
 // 显示文件预览
 function showFilePreview(file) {
+    console.log('showFilePreview 函数执行，文件名:', file.name);
+    
     const uploadArea = document.getElementById('uploadArea');
     const filePreview = document.getElementById('filePreview');
     const fileName = document.getElementById('fileName');
     
-    uploadArea.querySelector('.upload-content').style.display = 'none';
+    console.log('DOM元素检查:');
+    console.log('- uploadArea:', uploadArea);
+    console.log('- filePreview:', filePreview);
+    console.log('- fileName:', fileName);
+    
+    if (!uploadArea || !filePreview || !fileName) {
+        console.error('关键DOM元素缺失，无法显示文件预览');
+        showToast('界面元素异常，请刷新页面重试');
+        return;
+    }
+    
+    const uploadContent = uploadArea.querySelector('.upload-content');
+    if (!uploadContent) {
+        console.error('未找到 .upload-content 元素');
+        return;
+    }
+    
+    uploadContent.style.display = 'none';
     filePreview.style.display = 'block';
     fileName.textContent = file.name;
+    
+    console.log('文件预览界面已更新，显示文件名:', file.name);
     
     // 添加动画效果
     filePreview.style.opacity = '0';
@@ -633,7 +674,7 @@ function copyResult() {
     }
 }
 
-// 导出PDF功能
+// 导出PDF功能（兼容Tauri环境）
 function exportToPdf() {
     const resultContent = document.getElementById('resultContent');
     if (!resultContent || !resultContent.innerHTML.trim()) {
@@ -642,57 +683,324 @@ function exportToPdf() {
     }
     
     console.log('开始导出PDF...');
-    showToast('正在准备导出PDF...');
+    console.log('要导出的内容:', resultContent.innerHTML.substring(0, 200) + '...');
+    showToast('正在准备导出...');
     
     try {
-        // 创建新窗口进行打印，避免破坏原页面
-        const printWindow = window.open('', '_blank');
+        // 使用更简单可靠的方法：替换整个页面内容进行打印
+        const originalTitle = document.title;
+        const originalBody = document.body.innerHTML;
+        const contentToExport = resultContent.innerHTML;
         
-        const printContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>文档导出</title>
-                <style>
+        console.log('保存原始页面内容');
+        
+        // 创建打印专用的页面内容
+        const printHTML = `
+            <div style="
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            ">
+                <h1 style="text-align: center; margin-bottom: 30px; color: #2c2c2c;">OneDocs - 文档分析结果</h1>
+                ${contentToExport}
+            </div>
+            <style>
+                @media print {
                     @page { margin: 1in; }
-                    body { 
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                        font-size: 14px;
-                        line-height: 1.6;
-                        color: #333;
-                        max-width: 800px;
-                        margin: 0 auto;
-                        padding: 20px;
-                    }
+                    body { margin: 0; padding: 0; }
                     .katex { font-size: inherit !important; }
-                    h1, h2, h3, h4, h5, h6 { color: #333; margin-top: 1.5em; }
+                    h1, h2, h3, h4, h5, h6 { 
+                        color: #333 !important; 
+                        margin-top: 1.5em; 
+                        page-break-after: avoid;
+                    }
                     p { margin: 0.8em 0; }
-                    code { background: #f5f5f5; padding: 0.2em 0.4em; border-radius: 3px; }
-                    pre { background: #f5f5f5; padding: 1em; border-radius: 5px; overflow-x: auto; }
-                </style>
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-            </head>
-            <body>
-                ${resultContent.innerHTML}
-            </body>
-            </html>
+                    code { 
+                        background: #f5f5f5 !important; 
+                        padding: 0.2em 0.4em; 
+                        border-radius: 3px; 
+                        border: 1px solid #ddd;
+                    }
+                    pre { 
+                        background: #f5f5f5 !important; 
+                        padding: 1em; 
+                        border-radius: 5px; 
+                        border: 1px solid #ddd;
+                        page-break-inside: avoid;
+                    }
+                    blockquote {
+                        border-left: 4px solid #4a90e2;
+                        margin: 1rem 0;
+                        padding: 0.5rem 1rem;
+                        background: #f8f9fa !important;
+                    }
+                    #controlBar { display: none !important; }
+                }
+                @media screen {
+                    body { 
+                        background: white;
+                        margin: 0;
+                        padding: 0;
+                    }
+                }
+            </style>
         `;
         
-        printWindow.document.write(printContent);
-        printWindow.document.close();
+        // 更改页面标题和内容
+        document.title = 'OneDocs - 文档分析结果 - 导出';
+        document.body.innerHTML = printHTML;
         
-        // 等待内容加载完成后打印
+        console.log('页面内容已替换，准备打印');
+        
+        // 创建恢复函数
+        const restorePage = () => {
+            console.log('恢复原始页面');
+            document.title = originalTitle;
+            document.body.innerHTML = originalBody;
+            
+            // 重新初始化事件监听器
+            setTimeout(() => {
+                initializeEventListeners();
+                loadSettings();
+                showToast('页面已恢复');
+            }, 100);
+        };
+        
+        // 添加控制按钮到打印页面
+        const controlButtonsHTML = `
+            <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: rgba(255,255,255,0.95);
+                padding: 15px 20px;
+                z-index: 1000;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #e0e0e0;
+            " id="controlBar">
+                <button style="
+                    background: #dc3545;
+                    color: white;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 500;
+                    transition: background-color 0.2s;
+                " onclick="window.restoreOriginalPage()" 
+                   onmouseover="this.style.background='#c82333'"
+                   onmouseout="this.style.background='#dc3545'">
+                    ← 返回应用
+                </button>
+                <div style="
+                    color: #666;
+                    font-size: 14px;
+                    font-weight: 500;
+                ">
+                    导出模式 - 按 Ctrl+P 或点击右侧按钮打印
+                </div>
+                <button style="
+                    background: #28a745;
+                    color: white;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 500;
+                    transition: background-color 0.2s;
+                " onclick="window.print()"
+                   onmouseover="this.style.background='#218838'"
+                   onmouseout="this.style.background='#28a745'">
+                    🖨️ 打印导出
+                </button>
+            </div>
+            <div style="height: 70px;"></div>
+        `;
+        
+        // 将恢复函数暴露到全局
+        window.restoreOriginalPage = restorePage;
+        
+        // 在页面内容前插入控制按钮
+        const finalHTML = controlButtonsHTML + printHTML;
+        document.body.innerHTML = finalHTML;
+        
+        // 自动触发打印
+        showToast('页面已切换到导出模式，将自动打开打印对话框');
+        
         setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-            showToast('PDF导出对话框已打开');
-        }, 500);
+            console.log('自动触发打印...');
+            window.print();
+            
+            // 监听打印完成事件
+            const afterPrint = () => {
+                console.log('检测到打印对话框关闭');
+                // 显示提示并询问用户是否要返回
+                setTimeout(() => {
+                    const userChoice = confirm(
+                        '打印对话框已关闭。\n\n' +
+                        '点击"确定"返回应用界面\n' +
+                        '点击"取消"继续在当前页面操作\n\n' +
+                        '提示：您也可以点击左上角的"返回应用"按钮'
+                    );
+                    if (userChoice) {
+                        restorePage();
+                    } else {
+                        // 添加一个提示，告诉用户如何返回
+                        const controlBar = document.getElementById('controlBar');
+                        if (controlBar) {
+                            controlBar.style.background = 'rgba(255,235,59,0.95)';
+                            setTimeout(() => {
+                                controlBar.style.background = 'rgba(255,255,255,0.95)';
+                            }, 2000);
+                        }
+                    }
+                }, 500);
+                
+                // 移除事件监听器
+                window.removeEventListener('afterprint', afterPrint);
+            };
+            
+            // 添加打印完成监听器
+            window.addEventListener('afterprint', afterPrint);
+            
+        }, 800);
         
     } catch (error) {
         console.error('导出PDF失败:', error);
-        showToast('导出失败：' + error.message);
+        
+        // 备用方案：下载HTML文件
+        try {
+            showToast('使用备用方案：下载HTML文件');
+            downloadAsHtml();
+        } catch (backupError) {
+            console.error('备用方案也失败:', backupError);
+            showToast('导出失败，请尝试复制内容后手动创建文档');
+        }
     }
+}
+
+// 备用导出方案：下载为HTML文件
+function downloadAsHtml() {
+    const resultContent = document.getElementById('resultContent');
+    if (!resultContent) {
+        throw new Error('没有可导出的内容');
+    }
+    
+    const contentToExport = resultContent.innerHTML;
+    console.log('备用方案：导出内容长度', contentToExport.length);
+    
+    const htmlContent = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneDocs - 文档分析结果</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+        }
+        .document-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e5e5;
+        }
+        .document-title {
+            color: #2c2c2c;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .export-info {
+            color: #666;
+            font-size: 12px;
+        }
+        .katex { font-size: inherit !important; }
+        h1, h2, h3, h4, h5, h6 { 
+            color: #333; 
+            margin-top: 1.5em; 
+            margin-bottom: 0.5em;
+        }
+        h1 { font-size: 1.8rem; border-bottom: 2px solid #e5e5e5; padding-bottom: 0.5rem; }
+        h2 { font-size: 1.5rem; }
+        h3 { font-size: 1.3rem; }
+        p { margin: 0.8em 0; text-align: justify; }
+        code { 
+            background: #f5f5f5; 
+            padding: 0.2em 0.4em; 
+            border-radius: 3px; 
+            border: 1px solid #e0e0e0;
+            font-family: 'Courier New', monospace;
+        }
+        pre { 
+            background: #f5f5f5; 
+            padding: 1em; 
+            border-radius: 5px; 
+            overflow-x: auto;
+            border: 1px solid #e0e0e0;
+        }
+        blockquote {
+            border-left: 4px solid #4a90e2;
+            margin: 1rem 0;
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            font-style: italic;
+        }
+        ul, ol { margin: 1rem 0; padding-left: 2rem; }
+        li { margin: 0.5rem 0; }
+        @media print { 
+            @page { margin: 1in; }
+            .document-header { page-break-after: avoid; }
+            h1, h2, h3, h4, h5, h6 { page-break-after: avoid; }
+            pre, blockquote { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-header">
+        <h1 class="document-title">OneDocs - 文档分析结果</h1>
+        <p class="export-info">导出时间: ${new Date().toLocaleString('zh-CN')} | 来源: OneDocs</p>
+    </div>
+    <div class="document-content">
+        ${contentToExport}
+    </div>
+</body>
+</html>`;
+
+    // 创建下载链接
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    // 生成带时间戳的文件名
+    const timestamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '').replace('T', '_');
+    a.download = `OneDocs_分析结果_${timestamp}.html`;
+    a.style.display = 'none';
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('HTML文件已下载，用浏览器打开后按Ctrl+P可打印为PDF');
 }
 
 // 返回首页
@@ -771,6 +1079,33 @@ function showToast(message) {
     setTimeout(() => {
         toast.style.display = 'none';
     }, displayTime);
+}
+
+// 检查格式说明的可见性
+function checkFormatNoticeVisibility() {
+    const hideNotice = localStorage.getItem('hideFormatNotice');
+    if (hideNotice === 'true') {
+        const formatNotice = document.getElementById('formatNotice');
+        if (formatNotice) {
+            formatNotice.style.display = 'none';
+        }
+    }
+}
+
+// 关闭格式说明
+function closeFormatNotice() {
+    const formatNotice = document.getElementById('formatNotice');
+    if (formatNotice) {
+        formatNotice.style.opacity = '0';
+        formatNotice.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            formatNotice.style.display = 'none';
+        }, 300);
+        
+        // 保存用户的选择，下次不再显示
+        localStorage.setItem('hideFormatNotice', 'true');
+        showToast('格式说明已隐藏，下次访问时不会显示');
+    }
 }
 
 // 点击模态框外部关闭

@@ -3,6 +3,11 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    /* 禁用全局文本选择 */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 :root {
@@ -410,10 +415,12 @@ body {
     background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(53, 122, 189, 0.1) 100%);
     border: 1px solid rgba(74, 144, 226, 0.2);
     border-radius: var(--border-radius);
-    padding: 1rem;
+    padding: 0.8rem;
     margin-bottom: 1rem;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--primary-color);
+    position: relative;
+    transition: var(--transition);
 }
 
 .format-notice code {
@@ -424,12 +431,37 @@ body {
     font-weight: 500;
 }
 
+.notice-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0.2rem;
+    border-radius: 50%;
+    transition: var(--transition);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notice-close:hover {
+    background: rgba(74, 144, 226, 0.2);
+    color: var(--primary-color);
+}
+
 .render-notice {
     text-align: center;
-    margin: 1rem 0;
-    font-size: 0.8rem;
+    margin: 0.5rem 0;
+    font-size: 0.75rem;
     color: #888;
-    opacity: 0.8;
+    opacity: 0.7;
+    line-height: 1.2;
 }
 
 .render-notice p {
@@ -451,11 +483,7 @@ body {
     background: var(--hover-color);
 }
 
-.upload-area.dragover {
-    border-color: var(--accent-color);
-    background: var(--hover-color);
-    transform: scale(1.02);
-}
+/* 拖拽功能已禁用，相关样式已移除 */
 
 .upload-icon {
     font-size: 3rem;
@@ -783,6 +811,11 @@ body {
 .result-content {
     line-height: 1.7;
     color: var(--primary-color);
+    /* 允许结果内容被选择和复制 */
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 .result-content h1, 
@@ -921,6 +954,11 @@ body {
     padding: 1rem;
     border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
+    /* 允许Markdown源码被选择和复制 */
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 /* 模态框样式 */
@@ -994,6 +1032,11 @@ body {
     font-size: 1rem;
     transition: var(--transition);
     font-family: inherit;
+    /* 允许设置页面输入框进行文本选择 */
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 .setting-item input:focus,
