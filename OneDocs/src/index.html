@@ -3,36 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>一文亦闻 - OneDocs</title>
-    <link rel="stylesheet" href="styles/main.css">
+    <title>OneDocs - 一文亦闻</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="welcome-container">
-        <div class="header">
-            <h1 class="app-title">一文亦闻</h1>
-            <p class="app-subtitle">OneDocs</p>
-        </div>
-        
-        <div class="content">
-            <p class="description">
-                一文洞悉天下事，亦闻万象皆通明。<br>
-                此器以智能之力，助君解析文档，提炼精华，化繁为简。
-            </p>
-            
-            <button id="enterBtn" class="enter-btn">
-                始于一文
-            </button>
-        </div>
-        
-        <div class="footer">
-            <p class="motto">知识如海，智慧如光</p>
-        </div>
+    <div class="main-container">
+        <header class="header">
+            <div class="logo-section">
+                <h1 class="logo-text">OneDocs</h1>
+                <h2 class="logo-chinese">一文亦闻</h2>
+            </div>
+        </header>
+
+        <main class="hero-section">
+            <div class="hero-content">
+                <div class="title-section">
+                    <h3 class="main-title">文章千卷，一览而知</h3>
+                    <p class="subtitle">智慧之器，助君析文明理</p>
+                </div>
+
+                <div class="description">
+                    <p>OneDocs者，一文亦闻也，乃集诸多智能提示之力，助君速览文档精髓，无论新闻要览、数据解析，抑或学科要点，皆可一键明了。</p>
+                </div>
+
+                <div class="features-preview">
+                    <div class="feature-card">
+                        <div class="feature-icon">📰</div>
+                        <div class="feature-name">要闻概览</div>
+                        <div class="feature-desc">新闻要点，一目了然</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-name">罗森析数</div>
+                        <div class="feature-desc">数据洞察，深入浅出</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔬</div>
+                        <div class="feature-name">理工速知</div>
+                        <div class="feature-desc">理科要义，条分缕析</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-name">文采丰呈</div>
+                        <div class="feature-desc">人文精粹，博古通今</div>
+                    </div>
+                </div>
+
+                <button class="start-button" onclick="goToTool()">
+                    <span class="button-text">始于一文</span>
+                    <span class="button-arrow">→</span>
+                </button>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>© 2025 OneDocs - 一文亦闻</p>
+        </footer>
     </div>
 
-    <script>
-        document.getElementById('enterBtn').addEventListener('click', function() {
-            window.location.href = 'tool.html';
-        });
-    </script>
+    <script src="js/main.js"></script>
 </body>
 </html>

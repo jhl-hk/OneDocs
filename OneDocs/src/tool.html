@@ -3,118 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>一文亦闻 - 工具页</title>
-    <link rel="stylesheet" href="styles/main.css">
+    <title>OneDocs - 文档智析</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- PDF.js库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Mammoth.js库用于Word文档 -->
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+    <!-- Marked.js用于Markdown解析 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+    <!-- KaTeX用于LaTeX数学公式 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <!-- 预加载提示词配置 -->
+    <script src="prompts/science.js"></script>
+    <script src="prompts/liberal.js"></script>
+    <script src="prompts/data.js"></script>
+    <script src="prompts/news.js"></script>
 </head>
 <body>
-    <div class="app-layout">
-        <!-- 左侧边栏 -->
-        <aside id="sidebar" class="sidebar">
-            <div class="sidebar-header">
-                <h2 class="sidebar-title">功能选择</h2>
-                <button id="sidebarToggle" class="sidebar-toggle">◀</button>
+    <div class="tool-container">
+        <header class="tool-header">
+            <div class="header-left">
+                <button class="back-button" onclick="goBack()">←</button>
+                <h1 class="tool-title">OneDocs</h1>
+                <span class="tool-subtitle">文档智析</span>
             </div>
-            
-            <nav class="sidebar-nav">
-                <div class="function-list">
-                    <button class="function-item active" onclick="selectFunction('lg')" data-function="lg">
-                        <div class="function-icon">📚</div>
-                        <div class="function-info">
-                            <span class="function-name">理工速知</span>
-                            <span class="function-desc">理工科课件整理</span>
-                        </div>
-                        <div class="function-status available">可用</div>
-                    </button>
-                    
-                    <button class="function-item" onclick="selectFunction('news')" data-function="news">
-                        <div class="function-icon">📰</div>
-                        <div class="function-info">
-                            <span class="function-name">要闻概览</span>
-                            <span class="function-desc">新闻概要分析</span>
-                        </div>
-                        <div class="function-status unavailable">暂未推行</div>
-                    </button>
-                    
-                    <button class="function-item" onclick="selectFunction('data')" data-function="data">
-                        <div class="function-icon">📊</div>
-                        <div class="function-info">
-                            <span class="function-name">罗森析数</span>
-                            <span class="function-desc">数据表现分析</span>
-                        </div>
-                        <div class="function-status unavailable">暂未推行</div>
-                    </button>
-                    
-                    <button class="function-item" onclick="selectFunction('arts')" data-function="arts">
-                        <div class="function-icon">📖</div>
-                        <div class="function-info">
-                            <span class="function-name">文采丰呈</span>
-                            <span class="function-desc">社科文学整理</span>
-                        </div>
-                        <div class="function-status unavailable">暂未推行</div>
-                    </button>
-                </div>
-            </nav>
-        </aside>
+            <div class="header-right">
+                <button class="analyze-button-mini" id="analyzeButtonMini" onclick="analyzeDocument()" disabled>
+                    <span class="button-text">开始析文</span>
+                    <div class="button-loader" style="display: none;"></div>
+                </button>
+                <button class="settings-button" onclick="openSettings()">⚙️</button>
+            </div>
+        </header>
 
-        <!-- 主内容区域 -->
-        <main class="main-content">
-            <!-- 顶部工具栏 -->
-            <header class="toolbar">
-                <div class="toolbar-left">
-                    <h1 class="app-title">一文亦闻</h1>
-                    <div class="file-info" id="fileInfo" style="display: none;">
-                        <span class="file-name" id="fileName">未选择文件</span>
-                        <span class="file-size" id="fileSize"></span>
+        <main class="tool-main">
+            <!-- 侧边栏 -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <span class="sidebar-title">功能选择</span>
+                    <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()">◀</button>
+                </div>
+                <div class="sidebar-content">
+                    <div class="function-buttons">
+                        <button class="function-btn" data-function="news" onclick="selectFunction('news')">
+                            <div class="function-icon">📰</div>
+                            <div class="function-name">要闻概览</div>
+                            <div class="function-desc">新闻要点梳理</div>
+                        </button>
+                        <button class="function-btn" data-function="data" onclick="selectFunction('data')">
+                            <div class="function-icon">📊</div>
+                            <div class="function-name">罗森析数</div>
+                            <div class="function-desc">数据内容分析</div>
+                        </button>
+                        <button class="function-btn active" data-function="science" onclick="selectFunction('science')">
+                            <div class="function-icon">🔬</div>
+                            <div class="function-name">理工速知</div>
+                            <div class="function-desc">理工课件整理</div>
+                        </button>
+                        <button class="function-btn" data-function="liberal" onclick="selectFunction('liberal')">
+                            <div class="function-icon">📚</div>
+                            <div class="function-name">文采丰呈</div>
+                            <div class="function-desc">文科课件整理</div>
+                        </button>
                     </div>
                 </div>
-                
-                <div class="toolbar-right">
-                    <button id="uploadBtn" class="toolbar-btn upload-btn">📁 选择文档</button>
-                    <button id="analyzeBtn" class="toolbar-btn analyze-btn" disabled>🚀 开始分析</button>
-                    <button id="settingsBtn" class="toolbar-btn settings-btn">⚙️ 设置</button>
-                </div>
-            </header>
+            </div>
 
-            <!-- 结果显示区域 -->
-            <div class="content-area">
-                <div id="resultArea" class="result-display">
-                    <div class="welcome-message">
-                        <div class="welcome-icon">📚</div>
-                        <h3>理工速知</h3>
-                        <p>已选中「理工速知」功能</p>
-                        <p>请选择文档并点击开始分析</p>
+            <!-- 主内容区 -->
+            <div class="main-content">
+                <div class="chat-container">
+                    <div class="upload-section">
+                        <div class="format-notice">
+                            <p><strong>📋 格式说明：</strong>支持 <code>.pdf</code>、<code>.docx</code>、<code>.doc</code>、<code>.txt</code> 格式文件</p>
+                        </div>
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-content">
+                                <div class="upload-icon">📁</div>
+                                <p class="upload-text">拖拽文档至此，或点击选择</p>
+                                <p class="upload-hint">支持 PDF、Word、TXT 格式</p>
+                                <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+                            </div>
+                            <div class="file-preview" id="filePreview" style="display: none;">
+                                <div class="file-info">
+                                    <span class="file-name" id="fileName"></span>
+                                    <button class="remove-file" onclick="removeFile()">×</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 渲染提示文字 -->
+                    <div class="render-notice">
+                        <p>渲染结果仅供预览，请复制到外部文档整理查看</p>
+                    </div>
+
+                    <!-- 分析进度条 -->
+                    <div class="progress-section" id="progressSection" style="display: none;">
+                        <div class="progress-header">
+                            <h3>正在分析文档...</h3>
+                            <p class="progress-text" id="progressText">准备中...</p>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <span class="progress-percentage" id="progressPercentage">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="result-section" id="resultSection" style="display: none;">
+                        <div class="result-header">
+                            <h3 class="result-title">析文成果</h3>
+                            <div class="result-controls">
+                                <div class="view-toggle">
+                                    <button class="toggle-btn active" id="renderView" onclick="switchView('render')">渲染视图</button>
+                                    <button class="toggle-btn" id="markdownView" onclick="switchView('markdown')">源码视图</button>
+                                </div>
+                                <button class="copy-button" onclick="copyResult()">复制Markdown</button>
+                                <button class="copy-button" onclick="exportToPdf()">� 导出PDF</button>
+                            </div>
+                        </div>
+                        <div class="result-body">
+                            <div class="result-content" id="resultContent"></div>
+                            <div class="result-markdown" id="resultMarkdown" style="display: none;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
-
-        <!-- 隐藏的文件输入 -->
-        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display: none;">
     </div>
 
-    <!-- 设置模态框 -->
-    <div id="settingsModal" class="modal">
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>格物致知</h2>
-                <span class="close-btn" id="closeBtn">&times;</span>
+                <h3>设置配置</h3>
+                <button class="modal-close" onclick="closeSettings()">×</button>
             </div>
             <div class="modal-body">
-                <div class="input-group">
-                    <label for="apiKey">API 密钥</label>
-                    <input type="password" id="apiKey" placeholder="请输入您的 OpenAI API 密钥">
+                <div class="setting-item">
+                    <label for="baseUrl">API Base URL</label>
+                    <input type="text" id="baseUrl" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
+                    <small>API服务器地址，默认为OpenAI官方地址</small>
                 </div>
-                <div class="input-group">
-                    <label for="apiBaseUrl">接口地址（可选）</label>
-                    <input type="text" id="apiBaseUrl" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
+                <div class="setting-item">
+                    <label for="apiKey">OpenAI API Key</label>
+                    <input type="password" id="apiKey" placeholder="输入你的API密钥">
+                    <small>需要填入有效的OpenAI API密钥方可使用</small>
+                </div>
+                <div class="setting-item">
+                    <label for="modelSelect">选择模型</label>
+                    <select id="modelSelect">
+                        <option value="gpt-4o" selected>GPT-4o</option>
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    </select>
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="saveSettingsBtn" class="save-btn">惠存配置</button>
+                <button class="btn btn-secondary" onclick="closeSettings()">取消</button>
+                <button class="btn btn-primary" onclick="saveSettings()">保存</button>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Toast Notification -->
+    <div class="toast" id="toast" style="display: none;">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script src="js/tool.js"></script>
 </body>
 </html>
