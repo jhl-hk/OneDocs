@@ -68,6 +68,7 @@ OneDocs者，一文亦闻也，乃集诸多智能提示之力，助君速览文�
 ```bash
   cd OneDocs
 ```
+安装Rust： https://rust-lang.org/zh-CN/tools/install/
 
 启动开发服务器：
 
