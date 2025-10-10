@@ -1096,10 +1096,16 @@ body {
 
 .modal-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     gap: 1rem;
     padding: 1.5rem;
     border-top: 1px solid var(--border-color);
+}
+
+.modal-footer .footer-right {
+    display: flex;
+    gap: 1rem;
 }
 
 .btn {
@@ -1131,6 +1137,28 @@ body {
 .btn-primary:hover {
     background: #357abd;
     border-color: #357abd;
+}
+
+.btn-test {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: 1px solid #28a745;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-test:hover:not(:disabled) {
+    background: linear-gradient(135deg, #218838, #1ea688);
+    border-color: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-test:disabled {
+    background: #6c757d;
+    border-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 /* Toast 通知样式 */

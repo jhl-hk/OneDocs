@@ -153,7 +153,6 @@
                         <option value="openai" selected>OpenAI</option>
                         <option value="deepseek">DeepSeek</option>
                         <option value="glm">智谱GLM</option>
-                        <option value="aistudio">飞桨AI Studio</option>
                     </select>
                     <small>选择您要使用的AI模型提供商</small>
                 </div>
@@ -179,8 +178,11 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeSettings()">取消</button>
-                <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+                <button class="btn btn-test" id="testConnectionBtn" onclick="testConnection()">🔗 测试连接</button>
+                <div class="footer-right">
+                    <button class="btn btn-secondary" onclick="closeSettings()">取消</button>
+                    <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+                </div>
             </div>
         </div>
     </div>

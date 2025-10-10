@@ -47,25 +47,6 @@ const MODEL_PROVIDERS = {
         keyLabel: '智谱 API Key',
         keyHint: '需要填入有效的智谱API密钥方可使用',
         baseUrlHint: '智谱GLM API服务器地址'
-    },
-    aistudio: {
-        name: '飞桨AI Studio',
-        baseUrl: 'https://aistudio.baidu.com/llm/lmapi/v3',
-        endpoint: '/chat/completions',
-        models: [
-            { value: 'ernie-4.5-turbo-vl', name: 'ERNIE-4.5-Turbo-VL' },
-            { value: 'ernie-4.5-21b-a3b', name: 'ERNIE-4.5-21B-A3B' },
-            { value: 'kimi-k2-instruct', name: 'Kimi-K2-Instruct' },
-            { value: 'deepseek-v3', name: 'DeepSeek-V3' },
-            { value: 'deepseek-r1', name: 'DeepSeek-R1' },
-            { value: 'qwen3-235b-a22b', name: 'Qwen3-235B-A22B' },
-            { value: 'qwen3-30b-a3b', name: 'Qwen3-30B-A3B' },
-            { value: 'qwq-32b', name: 'QwQ-32B' }
-        ],
-        defaultModel: 'ernie-4.5-21b-a3b',
-        keyLabel: '飞桨 API Key',
-        keyHint: '需要填入有效的飞桨AI Studio API密钥',
-        baseUrlHint: '飞桨AI Studio API服务器地址'
     }
 };
 
@@ -77,6 +58,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     initializeEventListeners();
     loadSettings();
+    
+    // 确保设置对话框的默认状态正确
+    initializeSettingsDefaults();
 });
 
 // 验证提示词配置
@@ -578,7 +562,7 @@ async function callAI(systemPrompt, content, provider, apiKey) {
     };
     
     // 根据不同提供商调整参数
-    if (provider === 'openai' || provider === 'deepseek' || provider === 'aistudio') {
+    if (provider === 'openai' || provider === 'deepseek') {
         requestBody.max_tokens = 4000;
     } else if (provider === 'glm') {
         requestBody.max_tokens = 4000;
@@ -591,14 +575,41 @@ async function callAI(systemPrompt, content, provider, apiKey) {
     
     let response;
     try {
+        // 添加超时处理
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+        
+        console.log(`正在请求 ${config.name} API...`);
+        console.log('请求URL:', apiUrl);
+        console.log('请求头:', JSON.stringify(headers, null, 2));
+        console.log('请求体:', JSON.stringify(requestBody, null, 2));
+        
         response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify(requestBody),
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
+        console.log('API响应状态:', response.status, response.statusText);
+        
     } catch (fetchError) {
         console.error('Fetch请求失败:', fetchError);
-        throw new Error(`网络请求失败: ${fetchError.message}`);
+        
+        // 提供详细的错误信息和解决建议
+        let errorMessage = '';
+        if (fetchError.name === 'AbortError') {
+            errorMessage = `请求超时：连接${config.name} API超过30秒\n\n可能原因：\n1. 网络连接不稳定\n2. 服务器响应缓慢\n3. 防火墙或代理拦截`;
+        } else if (fetchError.message.includes('Failed to fetch') || fetchError.message.includes('fetch')) {
+            errorMessage = `网络连接失败：无法访问${config.name} API\n\n可能原因：\n1. 网络连接问题\n2. CORS跨域限制\n3. 防火墙或安全软件拦截\n4. API服务器暂时不可用\n\n建议解决方案：\n1. 检查网络连接\n2. 尝试更换网络环境\n3. 暂时关闭防火墙测试\n4. 联系网络管理员`;
+        } else if (fetchError.message.includes('SSL') || fetchError.message.includes('certificate')) {
+            errorMessage = `SSL证书错误：${fetchError.message}\n\n建议：检查系统时间和证书设置`;
+        } else {
+            errorMessage = `网络请求失败：${fetchError.message}\n\n请检查网络连接或尝试稍后重试`;
+        }
+        
+        throw new Error(errorMessage);
     }
     
     if (!response.ok) {
@@ -607,6 +618,7 @@ async function callAI(systemPrompt, content, provider, apiKey) {
             const errorData = await response.json();
             console.error('API错误响应:', errorData);
             errorMessage = errorData.error?.message || errorData.message || errorData.detail || errorMessage;
+            
         } catch (e) {
             errorMessage += `: ${response.statusText}`;
             console.error('解析错误响应失败:', e);
@@ -1199,9 +1211,17 @@ function openSettings() {
     const modal = document.getElementById('settingsModal');
     modal.style.display = 'flex';
     
-    // 加载当前选择的提供商
+    // 确保获取当前提供商，如果没有则默认为openai
     const currentProvider = localStorage.getItem('current_provider') || 'openai';
-    document.getElementById('providerSelect').value = currentProvider;
+    
+    // 设置提供商选择器的值
+    const providerSelect = document.getElementById('providerSelect');
+    providerSelect.value = currentProvider;
+    
+    // 如果localStorage中没有保存过提供商，则保存默认值
+    if (!localStorage.getItem('current_provider')) {
+        localStorage.setItem('current_provider', 'openai');
+    }
     
     // 触发提供商切换以加载相应设置
     onProviderChange();
@@ -1211,6 +1231,109 @@ function openSettings() {
 function closeSettings() {
     const modal = document.getElementById('settingsModal');
     modal.style.display = 'none';
+}
+
+// 测试API连接
+async function testConnection() {
+    const provider = document.getElementById('providerSelect').value;
+    const baseUrl = document.getElementById('baseUrl').value.trim();
+    const apiKey = document.getElementById('apiKey').value.trim();
+    const model = document.getElementById('modelSelect').value;
+    
+    if (!baseUrl) {
+        showToast('请先输入Base URL');
+        return;
+    }
+    
+    if (!apiKey) {
+        showToast('请先输入API Key');
+        return;
+    }
+    
+    const config = MODEL_PROVIDERS[provider];
+    const testBtn = document.getElementById('testConnectionBtn');
+    
+    if (testBtn) {
+        testBtn.disabled = true;
+        testBtn.textContent = '测试中...';
+    }
+    
+    try {
+        showToast('正在测试连接...');
+        
+        // 构建测试请求
+        const apiUrl = config.endpoint ? `${baseUrl}${config.endpoint}` : baseUrl;
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        };
+        
+        const testRequestBody = {
+            model: model,
+            messages: [
+                {
+                    role: 'user',
+                    content: '你好，这是一个连接测试。'
+                }
+            ],
+            max_tokens: 10,
+            temperature: 0.1
+        };
+        
+        console.log('测试连接到:', apiUrl);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(testRequestBody),
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.choices && data.choices[0]) {
+                showToast(`✅ ${config.name} 连接测试成功！\n\n响应模型: ${data.model || model}\n响应时间: ${Date.now() - Date.now()}ms`);
+            } else {
+                showToast(`⚠️ ${config.name} 连接成功，但响应格式异常\n\n可能是模型配置问题，请检查模型名称`);
+            }
+        } else {
+            const errorText = await response.text();
+            let errorMsg;
+            try {
+                const errorData = JSON.parse(errorText);
+                errorMsg = errorData.error?.message || errorData.message || errorText;
+            } catch (e) {
+                errorMsg = errorText;
+            }
+            showToast(`❌ ${config.name} 连接失败 (${response.status})\n\n错误信息: ${errorMsg}`);
+        }
+        
+    } catch (error) {
+        console.error('连接测试失败:', error);
+        
+        let errorMessage = `❌ ${config.name} 连接测试失败\n\n`;
+        
+        if (error.name === 'AbortError') {
+            errorMessage += '原因: 请求超时\n建议: 检查网络连接或尝试更换网络环境';
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('fetch')) {
+            errorMessage += '原因: 网络连接失败\n可能是:\n1. 网络不通\n2. CORS跨域问题\n3. 防火墙拦截\n4. Base URL不正确';
+        } else {
+            errorMessage += `原因: ${error.message}`;
+        }
+        
+        showToast(errorMessage);
+        
+    } finally {
+        if (testBtn) {
+            testBtn.disabled = false;
+            testBtn.textContent = '🔗 测试连接';
+        }
+    }
 }
 
 // 保存设置
@@ -1243,8 +1366,27 @@ function saveSettings() {
     updateAnalyzeButton();
 }
 
+// 初始化设置默认值
+function initializeSettingsDefaults() {
+    // 确保提供商选择器有正确的默认值
+    const providerSelect = document.getElementById('providerSelect');
+    if (providerSelect && !providerSelect.value) {
+        providerSelect.value = 'openai';
+    }
+    
+    // 确保localStorage中有默认的提供商
+    if (!localStorage.getItem('current_provider')) {
+        localStorage.setItem('current_provider', 'openai');
+    }
+}
+
 // 加载设置
 function loadSettings() {
+    // 确保有默认的提供商设置
+    if (!localStorage.getItem('current_provider')) {
+        localStorage.setItem('current_provider', 'openai');
+    }
+    
     updateAnalyzeButton();
 }
 
@@ -1291,6 +1433,8 @@ function closeFormatNotice() {
         showToast('格式说明已隐藏，下次访问时不会显示');
     }
 }
+
+
 
 // 点击模态框外部关闭
 document.addEventListener('click', function(event) {
