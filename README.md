@@ -62,12 +62,12 @@ OneDocs者，一文亦闻也，乃集诸多智能提示之力，助君速览文�
   git clone https://github.com/LYOfficial/OneDocs.git
 ```
 
-使用 `cd` 指令进入目标文件夹后，进入源码所在文件夹：
-
-```bash
-  cd OneDocs
-```
 安装Rust： https://rust-lang.org/zh-CN/tools/install/
+```bash
+# MacOS 用户选择
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
 
 启动开发服务器：
 
@@ -86,4 +86,3 @@ OneDocs者，一文亦闻也，乃集诸多智能提示之力，助君速览文�
 ## 作者
 
 - [@LYOfficial](https://github.com/LYOfficial/)
-
