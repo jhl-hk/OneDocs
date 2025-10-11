@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 本地引用 -->
+    <link rel="stylesheet" href="fonts/fontawesome.min.css">
     <!-- PDF.js库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Mammoth.js库用于Word文档 -->
@@ -28,16 +30,15 @@
     <div class="tool-container">
         <header class="tool-header">
             <div class="header-left">
-                <button class="back-button" onclick="goBack()">←</button>
+                <button class="back-button" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
                 <h1 class="tool-title">OneDocs</h1>
-                <span class="tool-subtitle">文档智析</span>
             </div>
             <div class="header-right">
                 <button class="analyze-button-mini" id="analyzeButtonMini" onclick="analyzeDocument()" disabled>
                     <span class="button-text">开始析文</span>
                     <div class="button-loader" style="display: none;"></div>
                 </button>
-                <button class="settings-button" onclick="openSettings()">⚙️</button>
+                <button class="settings-button" onclick="openSettings()"><i class="fas fa-cog"></i></button>
             </div>
         </header>
 
@@ -46,29 +47,37 @@
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <span class="sidebar-title">功能选择</span>
-                    <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()">◀</button>
+                    <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()"><i class="fas fa-chevron-left"></i></button>
                 </div>
                 <div class="sidebar-content">
                     <div class="function-buttons">
                         <button class="function-btn" data-function="news" onclick="selectFunction('news')">
                             <div class="function-icon">📰</div>
-                            <div class="function-name">要闻概览</div>
-                            <div class="function-desc">新闻要点梳理</div>
+                            <div class="function-content">
+                                <div class="function-name">要闻概览</div>
+                                <div class="function-desc">新闻要点梳理</div>
+                            </div>
                         </button>
                         <button class="function-btn" data-function="data" onclick="selectFunction('data')">
                             <div class="function-icon">📊</div>
-                            <div class="function-name">罗森析数</div>
-                            <div class="function-desc">数据内容分析</div>
+                            <div class="function-content">
+                                <div class="function-name">罗森析数</div>
+                                <div class="function-desc">数据内容分析</div>
+                            </div>
                         </button>
                         <button class="function-btn active" data-function="science" onclick="selectFunction('science')">
                             <div class="function-icon">🔬</div>
-                            <div class="function-name">理工速知</div>
-                            <div class="function-desc">理工课件整理</div>
+                            <div class="function-content">
+                                <div class="function-name">理工速知</div>
+                                <div class="function-desc">理工课件整理</div>
+                            </div>
                         </button>
                         <button class="function-btn" data-function="liberal" onclick="selectFunction('liberal')">
                             <div class="function-icon">📚</div>
-                            <div class="function-name">文采丰呈</div>
-                            <div class="function-desc">文科课件整理</div>
+                            <div class="function-content">
+                                <div class="function-name">文采丰呈</div>
+                                <div class="function-desc">文科课件整理</div>
+                            </div>
                         </button>
                     </div>
                 </div>

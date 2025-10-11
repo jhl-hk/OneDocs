@@ -94,13 +94,14 @@ function verifyPromptConfigs() {
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const collapseBtn = document.getElementById('collapseBtn');
+    const icon = collapseBtn.querySelector('i');
     
     if (sidebar.classList.contains('collapsed')) {
         sidebar.classList.remove('collapsed');
-        collapseBtn.innerHTML = '◀';
+        icon.className = 'fas fa-chevron-left';
     } else {
         sidebar.classList.add('collapsed');
-        collapseBtn.innerHTML = '▶';
+        icon.className = 'fas fa-chevron-right';
     }
 }
 
