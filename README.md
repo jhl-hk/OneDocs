@@ -86,3 +86,4 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ## 作者
 
 - [@LYOfficial](https://github.com/LYOfficial/)
+- [@JHL-HK](https://github.com/JHL-HK)
