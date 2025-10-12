@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "identifier": "com.ijune.onedocs",
   "build": {
-    "frontendDist": "../src"
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
   },
   "app": {
     "withGlobalTauri": true,
@@ -19,9 +22,7 @@
     ],
     "security": {
       "csp": null,
-      "capabilities": [
-        "default"
-      ]
+      "capabilities": ["default"]
     }
   },
   "bundle": {
