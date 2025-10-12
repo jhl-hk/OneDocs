@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { useAppStore } from '../stores/useAppStore';
-import { useDocumentAnalysis } from '../hooks/useDocumentAnalysis';
-import { Sidebar } from './Sidebar';
-import { FileUpload } from './FileUpload';
-import { ResultArea } from './ResultArea';
-import { ProgressBar } from './ProgressBar';
-import { Settings } from './Settings';
+import { useState } from "react";
+import { useAppStore } from "../stores/useAppStore";
+import { useDocumentAnalysis } from "../hooks/useDocumentAnalysis";
+import { Sidebar } from "./Sidebar";
+import { FileUpload } from "./FileUpload";
+import { ResultArea } from "./ResultArea";
+import { ProgressBar } from "./ProgressBar";
+import { Settings } from "./Settings";
 
 export function ToolPage() {
-  const [toast, setToast] = useState({ show: false, message: '' });
+  const [toast, setToast] = useState({ show: false, message: "" });
   const [fileError, setFileError] = useState(null);
 
   const {
@@ -24,31 +24,50 @@ export function ToolPage() {
   const showToast = (message) => {
     setToast({ show: true, message });
     setTimeout(() => {
-      setToast({ show: false, message: '' });
+      setToast({ show: false, message: "" });
     }, 3000);
   };
 
   const handleAnalyze = async () => {
+    console.log("🔘 Button clicked! Starting analysis...", {
+      hasFile: !!currentFile,
+      fileName: currentFile?.name,
+      selectedFunction,
+      isAnalyzing,
+    });
+
     if (!currentFile) {
-      showToast('请先上传文件');
+      console.log("⚠️ No file selected");
+      showToast("请先上传文件");
       return;
     }
 
     const config = getCurrentProviderConfig();
+    console.log("🔑 Checking API config...", {
+      hasApiKey: !!config.apiKey,
+      baseUrl: config.baseUrl,
+      model: config.model,
+    });
+
     if (!config.apiKey) {
-      showToast('请先在设置中配置API密钥');
+      console.log("⚠️ No API key configured");
+      showToast("请先在设置中配置API密钥");
       return;
     }
 
     try {
+      console.log("▶️ Calling analyzeDocument...");
       await analyzeDocument(currentFile, selectedFunction);
-      showToast('分析完成！');
+      console.log("✅ Analysis completed successfully");
+      showToast("分析完成！");
     } catch (error) {
-      showToast(error.message || '分析失败，请重试');
+      console.log("❌ Analysis failed:", error);
+      showToast(error.message || "分析失败，请重试");
     }
   };
 
-  const canAnalyze = currentFile && !isAnalyzing && getCurrentProviderConfig().apiKey;
+  const canAnalyze =
+    currentFile && !isAnalyzing && getCurrentProviderConfig().apiKey;
 
   return (
     <div className="tool-container">
@@ -64,7 +83,7 @@ export function ToolPage() {
             disabled={!canAnalyze}
           >
             <span className="button-text">
-              {isAnalyzing ? '分析中...' : '开始析文'}
+              {isAnalyzing ? "分析中..." : "开始析文"}
             </span>
             {isAnalyzing && <div className="button-loader"></div>}
           </button>
