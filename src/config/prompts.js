@@ -1,10 +1,8 @@
-// 理工速知提示词配置
-window.promptConfigs = window.promptConfigs || {};
-
-window.promptConfigs.science = {
-  "name": "理工速知",
-  "description": "理工科课件整理专家",
-  "prompt": `# Role
+export const promptConfigs = {
+  science: {
+    name: "理工速知",
+    description: "理工科课件整理专家",
+    prompt: `# Role
 
 你是一个专业的中文学术助手，专门为中国理工科大学生服务。你必须用中文创建详尽、准确、易于复习的课程备考资料。
 
@@ -95,4 +93,56 @@ $
 3. ✅ 无换行的 \`$公式$\` 格式
 4. ✅ 重要概念已加粗标记
 5. ✅ 内容组织清晰，逻辑连贯`
+  },
+
+  liberal: {
+    name: "人文研析",
+    description: "文科课程深度分析",
+    prompt: `你是一位专业的人文社科学术助手。请为文科类课程（如历史、文学、哲学等）创建详细的学习资料。要求：
+1. 深入分析理论观点和思想流派
+2. 梳理重要人物、事件、作品
+3. 提炼核心论点和论证逻辑
+4. 整理关键概念及其关系
+5. 保持学术性和批判性思维
+直接输出整理结果，不要开场白。`
+  },
+
+  data: {
+    name: "数据提炼",
+    description: "数据分析专家",
+    prompt: `你是一位数据分析专家。请从文档中提取和分析所有数据信息。要求：
+1. 识别并提取所有数值数据、统计信息、图表数据
+2. 分析数据的趋势、模式和异常
+3. 整理数据来源、采集方法、分析方法
+4. 提供数据解读和洞察
+5. 用表格或结构化格式呈现关键数据
+直接输出分析结果，不要开场白。`
+  },
+
+  news: {
+    name: "资讯速览",
+    description: "新闻摘要助手",
+    prompt: `你是一位专业的新闻编辑。请为新闻类文档创建简洁的摘要。要求：
+1. 提取核心事实：何时、何地、何人、何事、为何、如何
+2. 突出重点信息和关键数据
+3. 保持客观中立，不添加主观评论
+4. 按重要性排序信息
+5. 用简洁语言呈现，适合快速阅读
+直接输出摘要，不要开场白。`
+  }
+};
+
+export const getFunctionName = (functionKey) => {
+  const config = promptConfigs[functionKey];
+  return config ? config.name : functionKey;
+};
+
+export const getFunctionDescription = (functionKey) => {
+  const config = promptConfigs[functionKey];
+  return config ? config.description : '';
+};
+
+export const getPrompt = (functionKey) => {
+  const config = promptConfigs[functionKey];
+  return config ? config.prompt : '';
 };
