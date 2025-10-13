@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneDocs - 一文亦闻 | 文章千卷，一览而知</title>
+    <meta name="description" content="OneDocs - 一文亦闻，集诸多智能提示之力，助君速览文档精髓，无论新闻要览、数据解析，抑或学科要点，皆可一键明了。">
+    <meta name="keywords" content="OneDocs, 一文亦闻, 文档分析, 智能分析, AI文档处理, 文档总结">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icon.png">>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1 class="nav-logo">OneDocs</h1>
+                <span class="nav-subtitle">一文亦闻</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#home" class="nav-link active">首页</a></li>
+                <li class="nav-item"><a href="#features" class="nav-link">功能</a></li>
+                <li class="nav-item"><a href="#download" class="nav-link">下载</a></li>
+                <li class="nav-item"><a href="#about" class="nav-link">关于</a></li>
+            </ul>
+            <div class="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主页面 -->
+    <main id="home" class="main-container">
+        <!-- 头部区域 -->
+        <header class="header">
+            <div class="hero-background"></div>
+            <div class="hero-content">
+                <div class="logo-section">
+                    <h1 class="logo-text">OneDocs</h1>
+                    <h2 class="logo-chinese">一文亦闻</h2>
+                </div>
+                
+                <div class="title-section">
+                    <h3 class="main-title">文章千卷，一览而知</h3>
+                    <p class="subtitle">智慧之器，助君析文明理</p>
+                </div>
+
+                <div class="description">
+                    <p>
+                        OneDocs者，一文亦闻也，乃集诸多智能提示之力，助君速览文档精髓，无论新闻要览、数据解析，抑或学科要点，皆可一键明了。
+                    </p>
+                </div>
+
+                <div class="cta-section">
+                    <button class="download-button primary" onclick="scrollToDownload()">
+                        <span class="button-text">立即下载</span>
+                        <span class="button-arrow">
+                            <i class="fas fa-download"></i>
+                        </span>
+                    </button>
+                    <button class="demo-button secondary" onclick="openWiki()">
+                        <span class="button-text">使用说明</span>
+                        <span class="button-arrow">
+                            <i class="fas fa-book"></i>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 功能预览区域 -->
+        <section id="features" class="features-section">
+            <div class="section-container">
+                <h2 class="section-title">核心功能</h2>
+                <p class="section-description">四大智能分析功能，满足不同场景需求</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card" data-feature="news">
+                        <div class="feature-icon">📰</div>
+                        <div class="feature-content">
+                            <h3 class="feature-name">要闻概览</h3>
+                            <p class="feature-desc">新闻要点梳理</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card" data-feature="data">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-content">
+                            <h3 class="feature-name">罗森析数</h3>
+                            <p class="feature-desc">数据内容分析</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card" data-feature="science">
+                        <div class="feature-icon">🔬</div>
+                        <div class="feature-content">
+                            <h3 class="feature-name">理工速知</h3>
+                            <p class="feature-desc">理工课件整理</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card" data-feature="liberal">
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-content">
+                            <h3 class="feature-name">文采丰呈</h3>
+                            <p class="feature-desc">文科课件整理</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 支持格式区域 -->
+        <section class="formats-section">
+            <div class="section-container">
+                <h2 class="section-title">支持格式</h2>
+                <p class="section-description">支持多种常见文档格式，满足各种使用场景</p>
+                
+                <div class="formats-grid">
+                    <div class="format-item">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>PDF</span>
+                    </div>
+                    <div class="format-item">
+                        <i class="fas fa-file-word"></i>
+                        <span>Word</span>
+                    </div>
+                    <div class="format-item">
+                        <i class="fas fa-file-powerpoint"></i>
+                        <span>PPT</span>
+                    </div>
+                    <div class="format-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span>TXT</span>
+                    </div>
+                </div>
+                
+                <div class="format-note">
+                    <i class="fas fa-info-circle"></i>
+                    <span>支持最大 50MB 文件大小</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 下载区域 -->
+        <section id="download" class="download-section">
+            <div class="section-container">
+                <h2 class="section-title">立即下载</h2>
+                <p class="section-description">选择适合您操作系统的版本</p>
+                
+                <!-- 下载提示 -->
+                <div class="download-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <span>如果下载被浏览器拦截，请点击"保留"继续下载</span>
+                </div>
+                
+                <div class="download-grid">
+                    <div class="download-card">
+                        <div class="download-icon">
+                            <i class="fab fa-windows"></i>
+                        </div>
+                        <h3>Windows</h3>
+                        <p>适用于 Windows 10 及以上版本</p>
+                        <button class="download-btn" onclick="downloadApp('windows')">
+                            <i class="fas fa-download"></i>
+                            下载 Windows 版
+                        </button>
+                        <div class="download-info">
+                            <span>版本: 1.0.2</span>
+                            <span>大小: 10.6 MB</span>
+                        </div>
+                    </div>
+                    
+                    <div class="download-card">
+                        <div class="download-icon">
+                            <i class="fab fa-apple"></i>
+                        </div>
+                        <h3>macOS</h3>
+                        <p>适用于 macOS 10.15 及以上版本</p>
+                        <button class="download-btn" onclick="downloadApp('macos')">
+                            <i class="fas fa-download"></i>
+                            下载 macOS 版
+                        </button>
+                        <div class="download-info">
+                            <span>版本: 1.0.2</span>
+                            <span>大小: 4.62 MB</span>
+                        </div>
+                    </div>
+                    
+                    <div class="download-card">
+                        <div class="download-icon">
+                            <i class="fab fa-linux"></i>
+                        </div>
+                        <h3>Linux</h3>
+                        <p>适用于主流 Linux 发行版</p>
+                        <button class="download-btn disabled" disabled>
+                            <i class="fas fa-clock"></i>
+                            敬请期待
+                        </button>
+                        <div class="download-info">
+                            <span>版本: 1.0.2</span>
+                            <span>即将发布</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="github-link">
+                    <a href="https://github.com/LYOfficial/OneDocs" target="_blank">
+                        <i class="fab fa-github"></i>
+                        在 GitHub 上查看源码
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于区域 -->
+        <section id="about" class="about-section">
+            <div class="section-container">
+                <h2 class="section-title">关于 OneDocs</h2>
+                
+                <div class="about-content">
+                    <div class="about-text">
+                        <p>
+                            OneDocs 是一款开源的文件分析工具，可以对输入的各种文本文件进行析读，并摘选出对用户有用的信息内容。
+                        </p>
+                        <p>
+                            OneDocs 适用于处理内容比较繁杂且有大量无关内容的文件，可以轻松地从中采撷重点信息，最终整理并渲染展示，用户亦可复制全文或导出备份。
+                        </p>
+                        
+                        <div class="about-features">
+                            <div class="about-feature">
+                                <i class="fas fa-rocket"></i>
+                                <div>
+                                    <h4>高效分析</h4>
+                                    <p>AI 驱动的智能分析，数秒内完成文档处理</p>
+                                </div>
+                            </div>
+                            <div class="about-feature">
+                                <i class="fas fa-shield-alt"></i>
+                                <div>
+                                    <h4>隐私安全</h4>
+                                    <p>本地处理，数据不上传，保护您的隐私</p>
+                                </div>
+                            </div>
+                            <div class="about-feature">
+                                <i class="fas fa-cogs"></i>
+                                <div>
+                                    <h4>多模型支持</h4>
+                                    <p>支持 OpenAI、DeepSeek、智谱等多种 AI 模型</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="about-stats">
+                        <div class="stat-item">
+                            <div class="stat-number" data-target="50">0</div>
+                            <div class="stat-label">MB 最大文件</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" data-target="4">0</div>
+                            <div class="stat-label">种分析模式</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" data-target="10">0</div>
+                            <div class="stat-label">+ AI 模型</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="footer-container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <h3>OneDocs</h3>
+                        <p>一文亦闻</p>
+                    </div>
+                    
+                    <div class="footer-links">
+                        <div class="footer-section">
+                            <h4>产品</h4>
+                            <ul>
+                                <li><a href="https://github.com/LYOfficial/OneDocs/releases/latest">立即下载</a></li>
+                                <li><a href="#" onclick="openWiki()">使用说明</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-section">
+                            <h4>支持</h4>
+                            <ul>
+                                <li><a href="https://github.com/LYOfficial/OneDocs/wiki/Frequently-Asked-Questions">常见问题</a></li>
+                                <li><a href="mailto:coldregion@qq.com">联系我们</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-section">
+                            <h4>开发者</h4>
+                            <ul>
+                                <li><a href="https://github.com/LYOfficial/OneDocs" target="_blank">GitHub</a></li>
+                                <li><a href="https://github.com/LYOfficial/OneDocs/wiki/Api-Key">API 文档</a></li>
+                                <li><a href="https://github.com/LYOfficial/OneDocs/releases/">更新日志</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; 2025 OneDocs - 一文亦闻. All rights reserved.</p>
+                    <div class="footer-social">
+                        <a href="https://github.com/LYOfficial/OneDocs" target="_blank">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- 返回顶部按钮 -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- 加载脚本 -->
+    <script src="script.js"></script>
+</body>
+</html>
