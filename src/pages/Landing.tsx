@@ -1,11 +1,12 @@
-export function LandingPage({ onStart }) {
-  const features = [
-    { icon: '📰', name: '要闻概览', desc: '新闻要点梳理' },
-    { icon: '📊', name: '罗森析数', desc: '数据内容分析' },
-    { icon: '🔬', name: '理工速知', desc: '理工课件整理' },
-    { icon: '📚', name: '文采丰呈', desc: '文科课件整理' },
-  ];
+import React from "react";
+import { FUNCTION_INFO } from "@/config/providers";
+import type { PromptType } from "@/types";
 
+interface LandingProps {
+  onStart: () => void;
+}
+
+export const Landing: React.FC<LandingProps> = ({ onStart }) => {
   return (
     <div className="main-container">
       <header className="header">
@@ -23,17 +24,22 @@ export function LandingPage({ onStart }) {
           </div>
 
           <div className="description">
-            <p>OneDocs者，一文亦闻也，乃集诸多智能提示之力，助君速览文档精髓，无论新闻要览、数据解析，抑或学科要点，皆可一键明了。</p>
+            <p>
+              OneDocs者，一文亦闻也，乃集诸多智能提示之力，助君速览文档精髓，无论新闻要览、数据解析，抑或学科要点，皆可一键明了。
+            </p>
           </div>
 
           <div className="features-preview">
-            {features.map((feature, index) => (
-              <div key={index} className="feature-card">
-                <div className="feature-icon">{feature.icon}</div>
-                <div className="feature-name">{feature.name}</div>
-                <div className="feature-desc">{feature.desc}</div>
-              </div>
-            ))}
+            {(Object.keys(FUNCTION_INFO) as PromptType[]).map((key) => {
+              const info = FUNCTION_INFO[key];
+              return (
+                <div key={key} className="feature-card">
+                  <div className="feature-icon">{info.icon}</div>
+                  <div className="feature-name">{info.name}</div>
+                  <div className="feature-desc">{info.description}</div>
+                </div>
+              );
+            })}
           </div>
 
           <button className="start-button" onClick={onStart}>
@@ -50,4 +56,4 @@ export function LandingPage({ onStart }) {
       </footer>
     </div>
   );
-}
+};

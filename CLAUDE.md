@@ -4,249 +4,346 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-OneDocs (一文亦闻) is a Tauri-based desktop application for intelligent document analysis. It uses OpenAI-compatible APIs to analyze documents (PDF, Word, TXT) and generate structured summaries tailored to different domains (science, liberal arts, data analysis, news).
+OneDocs (一文亦闻) is a Tauri-based desktop application for intelligent document analysis. It uses OpenAI-compatible APIs to analyze documents (PDF, Word, PowerPoint, TXT) and generate structured summaries tailored to different domains (science, liberal arts, data analysis, news).
 
 **Tech Stack:**
-- Frontend: Vanilla JavaScript, HTML, CSS
+- Frontend: React 18, TypeScript, Vite
+- State Management: Zustand with persist middleware
 - Backend: Rust (Tauri v2)
-- Document Processing: PDF.js, Mammoth.js
+- Document Processing: PDF.js, Mammoth.js, JSZip
 - Rendering: Marked.js (Markdown), KaTeX (LaTeX)
 
 ## Development Commands
 
 ```bash
-# Setup (from repository root)
-cd OneDocs
+# Setup
 npm install
 
-# Development (opens app with hot reload)
-npm run tauri dev
+# Development (Vite dev server only)
+npm run dev
+
+# Development (with Tauri)
+npm run tauri:dev
 
 # Build for production
-npm run tauri build
+npm run build
+npm run tauri:build
 ```
 
-## Architecture
+## Architecture Overview
 
-### Frontend Structure
+### React Application Structure
 
 ```
-OneDocs/src/
-├── index.html          # Landing page
-├── tool.html           # Main application UI
-├── js/
-│   ├── main.js         # Landing page logic
-│   ├── tool.js         # Main application logic (used in production)
-│   └── tool_clean.js   # Alternative version with JSON prompt loading
-├── prompts/
-│   ├── science.js      # STEM course summarization
-│   ├── liberal.js      # Liberal arts analysis
-│   ├── data.js         # Data analysis extraction
-│   ├── news.js         # News summarization
-│   └── *.json          # JSON versions (loaded by tool_clean.js)
-└── css/
-    └── style.css       # All application styles
+src/
+├── main.tsx              # React entry point
+├── App.tsx               # Root component with page routing
+├── pages/
+│   ├── Landing.tsx       # Landing page
+│   └── Tool.tsx          # Main analysis interface
+├── components/           # Reusable UI components
+│   ├── FileUpload.tsx
+│   ├── FunctionSelector.tsx
+│   ├── SettingsModal.tsx
+│   ├── ResultDisplay.tsx
+│   ├── ProgressBar.tsx
+│   └── Toast.tsx
+├── store/
+│   └── useAppStore.ts    # Zustand global state store
+├── hooks/
+│   └── useAnalysis.ts    # Document analysis logic
+├── services/
+│   └── api.ts            # API service layer
+├── utils/
+│   ├── documentProcessor.ts   # File extraction logic
+│   └── markdownRenderer.ts    # Markdown/LaTeX rendering
+├── config/
+│   ├── providers.ts      # AI provider configurations
+│   └── prompts/
+│       └── index.ts      # System prompts for each analysis type
+├── types/
+│   └── index.ts          # TypeScript type definitions
+└── styles/
+    └── index.css         # Global styles
 ```
 
-**Note:** `tool.js` and `tool_clean.js` implement the same functionality but differ in how they load prompts:
-- `tool.js`: Uses `.js` prompt files that inject into `window.promptConfigs` (default)
-- `tool_clean.js`: Fetches `.json` prompt files dynamically via `loadSystemPrompt()`
+### State Management (Zustand)
 
-### Multi-Provider API System
+The application uses Zustand with persistence for state management. Key state slices:
 
-The application supports multiple AI providers through a unified configuration system:
+**File State:**
+- `currentFile`: Currently selected file information
+- `setCurrentFile`: Update current file
 
-**Supported Providers** (in `MODEL_PROVIDERS` object):
-- OpenAI: GPT-4o, GPT-4o-mini, GPT-4, GPT-3.5 Turbo
-- DeepSeek: DeepSeek-Chat, DeepSeek-Reasoner
-- GLM (智谱): GLM-4-Flash, GLM-4-Air, GLM-4
+**Analysis State:**
+- `selectedFunction`: Current analysis type ('science' | 'liberal' | 'data' | 'news')
+- `isAnalyzing`: Boolean flag preventing concurrent analyses
+- `analysisProgress`: { percentage, message } for progress tracking
+- `analysisResult`: { content, timestamp } for analysis output
 
-**Storage Pattern:**
-```javascript
-localStorage.setItem('current_provider', 'openai'); // Current active provider
-localStorage.setItem('openai_api_key', apiKey);
-localStorage.setItem('openai_api_base_url', baseUrl);
-localStorage.setItem('openai_model', model);
-// Repeat for each provider with their prefix
-```
+**Settings State:**
+- `currentProvider`: Active AI provider ('openai' | 'deepseek' | 'glm')
+- `providerSettings`: Record of API keys, base URLs, and models per provider
+- `getCurrentSettings()`: Get settings for current provider
 
-### Prompt Configuration System
+**UI State:**
+- `isSidebarCollapsed`: Sidebar visibility
+- `isSettingsOpen`: Settings modal visibility
+- `viewMode`: 'render' | 'markdown' for result display
+- `showFormatNotice`: Format hint visibility
 
-Prompts are defined twice (JS and JSON) for flexibility. Each prompt has:
+Persisted state is stored in localStorage under the key `onedocs-storage`.
+
+### Multi-Provider AI System
+
+Defined in `src/config/providers.ts`:
+
+**Supported Providers:**
+- **OpenAI**: GPT-4o, GPT-4o-mini, GPT-4, GPT-3.5 Turbo
+- **DeepSeek**: DeepSeek-Chat, DeepSeek-Reasoner  
+- **GLM (智谱)**: GLM-4-Flash, GLM-4-Air, GLM-4
+
+Each provider configuration includes:
+- `name`: Display name
+- `baseUrl`: API base URL
+- `endpoint`: Chat completions endpoint path
+- `models`: Array of { value, name } model options
+- `defaultModel`: Default model selection
+- `keyLabel`, `keyHint`, `baseUrlHint`: UI labels
+
+### Prompt System
+
+Defined in `src/config/prompts/index.ts` as `PROMPT_CONFIGS`:
+
+- **science**: STEM course summarization (理工速知)
+- **liberal**: Liberal arts analysis (文采丰呈)
+- **data**: Data content analysis (罗森析数)
+- **news**: News summarization (要闻概览)
+
+Each prompt includes:
 - `name`: Display name
 - `description`: Short description
-- `prompt`: Complete system prompt with role, instructions, and format requirements
+- `prompt`: Complete system prompt with instructions
 
-**Adding a new prompt:**
-1. Create `prompts/newtype.js`:
-```javascript
-window.promptConfigs = window.promptConfigs || {};
-window.promptConfigs.newtype = {
-  "name": "Display Name",
-  "description": "Brief description",
-  "prompt": "Full system prompt..."
-};
-```
-2. Create matching `prompts/newtype.json` with same structure
-3. Add `<script src="prompts/newtype.js">` to `tool.html`
-4. Update `verifyPromptConfigs()` in `tool.js` to include the new type
-5. Add UI button in `tool.html` sidebar with `data-function="newtype"` attribute
-6. Add function name mapping in `analyzeDocument()` function
+**To add a new prompt type:**
+1. Add type to `PromptType` union in `src/types/index.ts`
+2. Add configuration to `PROMPT_CONFIGS` in `src/config/prompts/index.ts`
+3. Add UI button/option in `src/components/FunctionSelector.tsx`
+4. Update `FUNCTION_INFO` in `src/config/providers.ts` with icon and display info
 
 ### Document Processing Pipeline
 
-1. **File Upload** (`handleFileSelect()` → `processFile()`)
-   - Validates file type against `allowedTypes` array
-   - Checks file size limit (10MB default)
-   - Displays file preview via `showFilePreview()`
+1. **File Selection** (`FileUpload.tsx`)
+   - User selects file via file input or drag-and-drop
+   - Validates file type against `SUPPORTED_FILE_TYPES`
+   - Checks size limit (50MB default from `FILE_SIZE_LIMIT`)
+   - Updates `currentFile` in store
 
-2. **Text Extraction** (`extractFileContent()`)
+2. **Text Extraction** (`DocumentProcessor.extractContent()`)
    - Routes to appropriate extractor based on MIME type:
-     - `extractPDFText()`: Uses PDF.js to parse PDF ArrayBuffer
-     - `extractWordText()`: Uses Mammoth.js for .docx files
-     - `extractPowerPointText()`: Uses JSZip to extract text from .pptx XML
-     - Plain text: Direct read via FileReader
-   - Returns extracted text content
+     - **PDF**: `extractPDFText()` - Uses PDF.js to parse pages
+     - **Word**: `extractWordText()` - Uses Mammoth.js for .docx
+     - **PowerPoint**: `extractPowerPointText()` - Uses JSZip to parse .pptx XML
+     - **Text**: `extractTextFile()` - Direct FileReader
+   - Returns extracted text string
+   - Throws descriptive errors for parsing failures
 
-3. **API Analysis** (`analyzeDocument()`)
-   - Frontend sends to Rust backend via Tauri IPC: `invoke('analyze_content_rust')`
-   - Rust `analyze_content_rust()` command constructs OpenAI chat completion request
-   - Makes HTTP POST to `{base_url}/chat/completions` with Bearer token auth
-   - Returns AI-generated analysis to frontend
-   - Frontend renders Markdown with KaTeX math support using `renderMarkdown()`
+3. **AI Analysis** (`useAnalysis.ts` → `api.ts`)
+   - Hook: `useAnalysis()` orchestrates the analysis flow
+   - Updates progress at each stage (10%, 40%, 60%, 90%, 100%)
+   - Service: `APIService.callAI()` prepares API request
+   - Backend: Calls Tauri command `analyze_content_rust`
+   - Rust handler constructs OpenAI chat completion request
+   - Makes HTTP POST to `{baseUrl}/chat/completions` with Bearer auth
+   - Returns AI-generated markdown analysis
+
+4. **Result Rendering** (`ResultDisplay.tsx`)
+   - Supports two view modes: 'render' (HTML) and 'markdown' (raw)
+   - Uses `marked.js` to convert markdown to HTML
+   - Uses `katex` auto-render for LaTeX math:
+     - Inline: `$...$`
+     - Block: `$$...$$ ` (single line)
+   - Provides export to PDF functionality
 
 ### File Type Support
 
-**Currently supported formats:**
-- PDF: `application/pdf`
-- Word: `application/msword`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`
-- PowerPoint: `application/vnd.ms-powerpoint`, `application/vnd.openxmlformats-officedocument.presentationml.presentation`
-- Text: `text/plain`
+**Currently supported** (defined in `SUPPORTED_FILE_TYPES`):
+- `application/pdf` - PDF documents
+- `application/msword` - Word 97-2003 (.doc)
+- `application/vnd.openxmlformats-officedocument.wordprocessingml.document` - Word 2007+ (.docx)
+- `application/vnd.ms-powerpoint` - PowerPoint 97-2003 (.ppt)
+- `application/vnd.openxmlformats-officedocument.presentationml.presentation` - PowerPoint 2007+ (.pptx)
+- `text/plain` - Plain text files
 
-**When adding new file types:**
-1. Add MIME type to `allowedTypes` array in `tool.js`
-2. Add file extension to `accept` attribute in `tool.html` file input
-3. Add case in `processFile()` switch statement for `fileTypeHint`
-4. Add case in `extractFileContent()` to route to new extraction function
-5. Implement extraction function (e.g., `extractNewFormatText()`)
-6. Add library dependency to `tool.html` if needed
-7. Update format notice text and error messages
+**To add new file types:**
+1. Add MIME type to `SupportedFileType` in `src/types/index.ts`
+2. Add to `SUPPORTED_FILE_TYPES` array in `src/config/providers.ts`
+3. Update file input accept attribute in `FileUpload.tsx`
+4. Add case in `DocumentProcessor.extractContent()` switch
+5. Implement extraction method (e.g., `extractExcelText()`)
+6. Add type hint in `DocumentProcessor.getFileTypeHint()`
+7. Install required npm package if needed
 
 ### Tauri Backend
 
-**Rust commands** (`src-tauri/src/lib.rs`):
-- `analyze_content_rust`: Main API proxy that handles OpenAI chat completions
-  - Parameters: `api_key`, `api_base_url`, `system_prompt`, `text_content`
-  - Constructs messages with system prompt and user document content
-  - Makes HTTP request to configurable API base URL
-  - Returns AI-generated analysis string
+**Rust Command** (`src-tauri/src/lib.rs`):
 
-**Configuration** (`src-tauri/tauri.conf.json`):
-- Fixed window size (800x700, non-resizable)
-- Frontend served from `../src` directory
-- App identifier: `com.ijune.onedocs`
-- Product name: "onedocs"
-
-**Dependencies** (`src-tauri/Cargo.toml`):
-- `tauri`: v2.0.0-beta.21
-- `reqwest`: v0.12 (with json feature)
-- `serde`, `serde_json`: JSON serialization
-- `tokio`: Async runtime
-- `anyhow`: Error handling
-
-## Key Implementation Details
-
-### Settings Persistence
-
-Settings stored in `localStorage` with provider-specific keys:
-```javascript
-// Provider selection
-localStorage.setItem('current_provider', 'openai');
-
-// Provider-specific settings (replace 'openai' with provider key)
-localStorage.setItem('openai_api_key', apiKey);
-localStorage.setItem('openai_api_base_url', baseUrl);
-localStorage.setItem('openai_model', model);
+```rust
+#[tauri::command]
+async fn analyze_content_rust(
+    api_key: String,
+    api_base_url: String,
+    system_prompt: String,
+    text_content: String,
+    model: String,
+) -> Result<String, String>
 ```
 
-### Markdown Rendering
+- Constructs messages array with system and user prompts
+- Makes HTTP POST to `{api_base_url}/chat/completions`
+- Uses Bearer token authentication
+- Configurable temperature (0.7) and max_tokens (4000)
+- Returns AI response content or error message
 
-Uses `marked.js` with custom renderer for LaTeX:
-- Inline math: `$...$`
-- Block math: `$$...$$` (must be on single line per prompt requirements)
-- KaTeX auto-renderer processes math after Markdown conversion
-- Configured in `renderMarkdown()` function
+**Configuration** (`src-tauri/tauri.conf.json`):
+- App identifier: `com.ijune.onedocs`
+- Product name: `onedocs`
+- Window: 800x700, non-resizable
+- Dev server: http://localhost:1420
+- Build output: `../dist`
+- Plugins: `dialog`, `fs`
+
+**Dependencies** (`src-tauri/Cargo.toml`):
+- `tauri`: v2 with plugins
+- `reqwest`: HTTP client
+- `serde`, `serde_json`: JSON serialization
+- `anyhow`: Error handling
+
+## Key Implementation Patterns
+
+### Component Communication
+
+- **State**: Use Zustand store via `useAppStore()` hook
+- **Actions**: Dispatch actions through store methods
+- **Side Effects**: Use `useAnalysis()` hook for analysis flow
+- **Toast Notifications**: Use `useToast()` hook from Toast component
+
+### Error Handling
+
+All layers provide user-friendly error messages:
+- **Document Processor**: Specific errors for each file type
+- **API Service**: Interprets HTTP status codes (401, 403, 429, timeout, network)
+- **Analysis Hook**: Adds contextual suggestions for common failures
+- **Toast System**: Displays errors with configurable duration
 
 ### Progress Updates
 
-`updateProgress(percentage, message)` and related functions update UI during document processing:
-- Shows/hides loading spinner
-- Updates progress bar
-- Displays status messages
-- Manages analyze button state
+During analysis, `setAnalysisProgress()` updates UI:
+- 10%: "正在解析文档内容..."
+- 40%: "文档解析完成，准备分析..."
+- 60%: "正在调用AI分析..."
+- 90%: "分析完成，正在渲染结果..."
+- 100%: "分析完成！"
 
-### State Management
+### Markdown Rendering
 
-Global state variables in `tool.js`:
-- `currentFile`: Currently selected file object
-- `selectedFunction`: Current analysis type ('science', 'liberal', 'data', 'news')
-- `isAnalyzing`: Boolean flag to prevent concurrent analyses
+- Uses `marked` library with default options
+- KaTeX auto-render processes math after markdown conversion
+- Delimiters:
+  - Inline: `$...$`
+  - Display: `$$...$$` (must be single line)
+- Implementation in `src/utils/markdownRenderer.ts`
 
-### UI Components
-
-**Key DOM elements:**
-- `#uploadArea`: File upload dropzone
-- `#fileInput`: Hidden file input
-- `#filePreview`: Shows selected file info
-- `#analyzeButtonMini`: Main analyze button (disabled when no file/API key)
-- `#sidebar`: Function selection sidebar (collapsible)
-- `#resultArea`: Displays analysis results
-- `#settingsModal`: Settings dialog
-
-## Common Tasks
+## Common Development Tasks
 
 ### Adding a New AI Provider
 
-1. Add provider config to `MODEL_PROVIDERS` object in `tool.js`:
-```javascript
+1. Add provider key to `AIProvider` type in `src/types/index.ts`
+2. Add configuration to `MODEL_PROVIDERS` in `src/config/providers.ts`:
+```typescript
 newprovider: {
-    name: 'Provider Name',
-    baseUrl: 'https://api.provider.com/v1',
-    endpoint: '/chat/completions',
-    models: [
-        { value: 'model-id', name: 'Model Display Name' }
-    ],
-    defaultModel: 'model-id',
-    keyLabel: 'Provider API Key',
-    keyHint: 'Hint text',
-    baseUrlHint: 'Base URL hint'
+  name: 'Provider Name',
+  baseUrl: 'https://api.provider.com/v1',
+  endpoint: '/chat/completions',
+  models: [
+    { value: 'model-id', name: 'Model Display Name' }
+  ],
+  defaultModel: 'model-id',
+  keyLabel: 'API Key Label',
+  keyHint: 'Hint text',
+  baseUrlHint: 'Base URL hint'
 }
 ```
-2. Add provider option to settings modal in `tool.html`
-3. Update `initializeSettingsDefaults()` if special handling needed
-4. Settings will auto-save with provider prefix
+3. Add initial settings in `useAppStore.ts` `providerSettings` default state
+4. Add option in `SettingsModal.tsx` provider selector
+5. Test with the new provider's API
 
 ### Modifying Analysis Flow
 
-Main workflow in `analyzeDocument()` (tool.js:~350):
-1. Validates file, function, and API key exist
-2. Updates progress UI via `showProgress()`
-3. Extracts file content via `extractFileContent()`
-4. Calls Rust backend via `invoke('analyze_content_rust', {...})`
-5. Renders result in output area via `renderMarkdown()`
-6. Handles errors and updates UI state
+Main flow is in `src/hooks/useAnalysis.ts`:
 
-### Debugging
+1. Validate file and API key
+2. Extract file content via `DocumentProcessor`
+3. Get system prompt from `PROMPT_CONFIGS`
+4. Call `APIService.callAI()` with all parameters
+5. Update progress at each stage
+6. Save result to store via `setAnalysisResult()`
+7. Handle errors with descriptive messages
 
-- Browser DevTools available in `npm run tauri dev`
-- Rust logs via terminal output
-- Use `console.log()` liberally; existing code has extensive logging
-- Check `verifyPromptConfigs()` output for prompt loading issues
-- File processing logged step-by-step in `processFile()` and extraction functions
+### Styling Components
 
-### Adding Library Dependencies
+- Global styles in `src/styles/index.css`
+- Component styles use inline Tailwind-like utility classes (if configured) or inline styles
+- Font: "Noto Serif SC" for Chinese text
+- Icons: Font Awesome (loaded via CDN in index.html)
 
-1. Add CDN script tag to `tool.html` `<head>` section
-2. Check library availability with `typeof LibraryName !== "undefined"` before use
-3. Add error handling for missing library
-4. Current CDN libraries: PDF.js, Mammoth.js, JSZip, Marked.js, KaTeX, Font Awesome
+### Path Aliases
+
+TypeScript path alias `@/*` maps to `src/*`:
+- Configured in `tsconfig.json` paths
+- Configured in `vite.config.ts` resolve.alias
+- Use in imports: `import { useAppStore } from '@/store/useAppStore'`
+
+### Dependencies
+
+**Runtime:**
+- `@tauri-apps/api`, `@tauri-apps/plugin-*`: Tauri integration
+- `react`, `react-dom`: UI framework
+- `zustand`: State management
+- `pdfjs-dist`, `mammoth`, `jszip`: Document parsing
+- `marked`, `katex`: Rendering
+
+**Dev:**
+- `vite`, `@vitejs/plugin-react`: Build tooling
+- `typescript`: Type checking
+- `@types/*`: Type definitions
+
+PDF.js worker is loaded from CDN (version 4.10.38) to ensure stability.
+
+## Debugging Tips
+
+- React DevTools available in browser during development
+- Rust backend logs appear in terminal running `npm run tauri:dev`
+- Use browser console for frontend debugging
+- Check Zustand state with React DevTools
+- File processing errors are logged with detailed context
+- API errors include status codes and suggestions
+
+## Build and Deployment
+
+**Development build:**
+```bash
+npm run tauri:dev
+```
+
+**Production build:**
+```bash
+npm run build          # Build frontend
+npm run tauri:build    # Build Tauri app
+```
+
+Build artifacts:
+- Frontend: `dist/` directory
+- Tauri app: `src-tauri/target/release/bundle/`
+
+The application is configured for fixed window size (800x700) and cannot be resized. This is intentional for consistent UX.

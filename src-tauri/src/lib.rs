@@ -30,11 +30,11 @@ struct ChatResponse {
 async fn analyze_content_rust(
     api_key: String,
     api_base_url: String,
-    model: String,
     system_prompt: String,
     text_content: String,
+    model: String,
 ) -> Result<String, String> {
-    // 构造请求消息 (system_prompt 现在是纯文本)
+    // 构造请求消息
     let messages = vec![
         ChatMessage {
             role: "system".to_string(),
@@ -47,7 +47,7 @@ async fn analyze_content_rust(
     ];
 
     let chat_request = ChatRequest {
-        model: model,
+        model,
         messages,
         max_tokens: Some(4000),
         temperature: Some(0.7),
@@ -93,6 +93,8 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![greet, analyze_content_rust])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
