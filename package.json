@@ -5,33 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-<<<<<<< HEAD
-    "build": "vite build",
-=======
     "build": "tsc && vite build",
->>>>>>> 97925bd (Feat: Frontend to React)
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
-<<<<<<< HEAD
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^2",
-    "@vitejs/plugin-react": "^5.0.4",
-    "vite": "^7.1.9"
-  },
-  "dependencies": {
-    "@tauri-apps/api": "^2.8.0",
-    "jszip": "^3.10.1",
-    "katex": "^0.16.24",
-    "mammoth": "^1.11.0",
-    "marked": "^12.0.2",
-    "pdfjs-dist": "^5.4.296",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "zustand": "^5.0.8"
-=======
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",
@@ -55,6 +33,5 @@
     "@vitejs/plugin-react": "^4.3.3",
     "typescript": "^5.6.3",
     "vite": "^5.4.10"
->>>>>>> 97925bd (Feat: Frontend to React)
   }
 }
