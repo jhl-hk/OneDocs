@@ -30,16 +30,11 @@ struct ChatResponse {
 async fn analyze_content_rust(
     api_key: String,
     api_base_url: String,
-    model: String,
     system_prompt: String,
     text_content: String,
     model: String,
 ) -> Result<String, String> {
-<<<<<<< HEAD
-    // 构造请求消息 (system_prompt 现在是纯文本)
-=======
     // 构造请求消息
->>>>>>> 97925bd (Feat: Frontend to React)
     let messages = vec![
         ChatMessage {
             role: "system".to_string(),
@@ -52,11 +47,7 @@ async fn analyze_content_rust(
     ];
 
     let chat_request = ChatRequest {
-<<<<<<< HEAD
-        model: model,
-=======
         model,
->>>>>>> 97925bd (Feat: Frontend to React)
         messages,
         max_tokens: Some(4000),
         temperature: Some(0.7),
