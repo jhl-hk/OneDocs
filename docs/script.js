@@ -180,11 +180,11 @@ function downloadApp(platform) {
     
     switch(platform) {
         case 'windows':
-            downloadUrl = 'https://gh-proxy.com/https://github.com/LYOfficial/OneDocs/releases/download/v1.0.2/OneDocs-1.0.2.exe';
+            downloadUrl = 'https://gh-proxy.com/https://github.com/LYOfficial/OneDocs/releases/download/v1.1.0/OneDocs-1.1.0.exe';
             platformName = 'Windows';
             break;
         case 'macos':
-            downloadUrl = 'https://gh-proxy.com/https://github.com/LYOfficial/OneDocs/releases/download/v1.0.2/OneDocs-macOS-1.0.2.zip';
+            downloadUrl = 'https://gh-proxy.com/https://github.com/LYOfficial/OneDocs/releases/download/v1.1.0/OneDocs-macos-1.1.0.zip';
             platformName = 'macOS';
             break;
         default:
