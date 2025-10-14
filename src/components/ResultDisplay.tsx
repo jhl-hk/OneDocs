@@ -9,19 +9,20 @@ import "katex/dist/katex.min.css";
 export const ResultDisplay: React.FC = () => {
   const { analysisResult, viewMode, setViewMode } = useAppStore();
   const toast = useToast();
-  const [copyButtonText, setCopyButtonText] = useState("复制Markdown");
+  const [isCopying, setIsCopying] = useState(false);
 
   if (!analysisResult) return null;
 
   const handleCopyResult = async () => {
     try {
+      setIsCopying(true);
       await navigator.clipboard.writeText(analysisResult.content);
-      setCopyButtonText("已复制！");
       toast.show("已复制到剪贴板");
       setTimeout(() => {
-        setCopyButtonText("复制Markdown");
-      }, 2000);
+        setIsCopying(false);
+      }, 1500);
     } catch (error) {
+      setIsCopying(false);
       toast.show("复制失败，请手动选择复制");
     }
   };
@@ -92,8 +93,12 @@ export const ResultDisplay: React.FC = () => {
               源码视图
             </button>
           </div>
-          <button className="copy-button" onClick={handleCopyResult}>
-            {copyButtonText}
+          <button 
+            className={`copy-button ${isCopying ? 'copying' : ''}`} 
+            onClick={handleCopyResult}
+            disabled={isCopying}
+          >
+            复制Markdown
           </button>
           <button className="copy-button" onClick={handleExport}>
             导出

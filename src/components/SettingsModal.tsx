@@ -75,7 +75,12 @@ export const SettingsModal: React.FC = () => {
       );
       toast.show('连接测试成功！');
     } catch (error: any) {
-      toast.show(`连接测试失败：${error.message}`, 5000);
+      // 检查是否是余额不足的警告（连接正常但有余额问题）
+      if (error.message === 'BALANCE_WARNING' && error.isWarning) {
+        toast.show(`✅ ${error.originalMessage}`, 5000);
+      } else {
+        toast.show(`连接测试失败：${error.message}`, 5000);
+      }
     } finally {
       setIsTesting(false);
     }

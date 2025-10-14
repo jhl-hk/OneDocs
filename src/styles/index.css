@@ -960,6 +960,20 @@ body {
     box-shadow: var(--shadow-light);
 }
 
+.copy-button.copying {
+    opacity: 0.5;
+    color: var(--text-color-secondary);
+    background: var(--surface-color);
+    border-color: var(--border-color);
+    cursor: not-allowed;
+    transform: none;
+    pointer-events: none;
+}
+
+.copy-button:disabled {
+    pointer-events: none;
+}
+
 .result-content {
     line-height: 1.7;
     color: var(--primary-color);
