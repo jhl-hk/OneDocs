@@ -9,16 +9,16 @@
 
 阁下若对此项目**有所青睐**，还请**移步右上**，点亮那颗**星标**，不胜感谢。
 
-[![Tauri](https://img.shields.io/badge/Tauri-v2-FFC131?style=for-the-badge&logo=tauri&logoColor=white&labelColor=24C8DB)](https://tauri.app/) ![rust-analyzer Badge](https://img.shields.io/badge/rust--analyzer-DEA584?logo=rust&logoColor=black&style=for-the-badge) ![JavaScript Badge](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black&style=for-the-badge) ![Markdown Badge](https://img.shields.io/badge/Markdown-000000?logo=markdown&logoColor=white&style=for-the-badge) ![LaTeX Badge](https://img.shields.io/badge/LaTeX-008080?logo=latex&logoColor=white&style=for-the-badge)
+[![Tauri](https://img.shields.io/badge/Tauri-v2-FFC131?style=for-the-badge&logo=tauri&logoColor=white&labelColor=24C8DB)](https://tauri.app/) ![React Badge](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black) ![TypeScript Badge](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white) ![Markdown Badge](https://img.shields.io/badge/Markdown-000000?logo=markdown&logoColor=white&style=for-the-badge) ![LaTeX Badge](https://img.shields.io/badge/LaTeX-008080?logo=latex&logoColor=white&style=for-the-badge)
 
 文章千卷，一览而知。智慧之器，助君析文明理。
 
 OneDocs者，一文亦闻也，乃集诸多智能提示之力，助君速览文档精髓，无论新闻要览、数据解析，抑或学科要点，皆可一键明了。
 ## 测试截图
 
-![介绍页](https://img.1n.hk/f/2025/10/09/68e788eb98c17.png)
+![介绍页](https://img.1n.hk/f/2025/10/13/68ed10afe25ca.png)
 
-![应用页](https://img.1n.hk/f/2025/10/09/68e788ebe0f26.png)
+![应用页](https://img.1n.hk/f/2025/10/14/68ee653d507f9.png)
 
 
 ## 使用方法
