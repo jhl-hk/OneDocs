@@ -1,5 +1,7 @@
 // AI Provider Types
 export type AIProvider = 'openai' | 'deepseek' | 'glm';
+export type CustomProviderKey = `custom_${string}`;
+export type AllProviders = AIProvider | CustomProviderKey;
 
 export interface ModelOption {
   value: string;
@@ -15,6 +17,14 @@ export interface ProviderConfig {
   keyLabel: string;
   keyHint: string;
   baseUrlHint: string;
+}
+
+export interface CustomProviderConfig {
+  id: string;
+  name: string;
+  baseUrl: string;
+  model: string;
+  isCustom: true;
 }
 
 export type ModelProviders = Record<AIProvider, ProviderConfig>;
@@ -64,11 +74,20 @@ export interface ProviderSettings {
   model: string;
 }
 
+export interface CustomProviderSettings {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  name: string;
+}
+
 export type AllSettings = Record<AIProvider, ProviderSettings>;
+export type CustomSettings = Record<string, CustomProviderSettings>;
 
 export interface AppSettings {
-  currentProvider: AIProvider;
+  currentProvider: AIProvider | CustomProviderKey;
   providers: AllSettings;
+  customProviders: CustomSettings;
 }
 
 // View Types

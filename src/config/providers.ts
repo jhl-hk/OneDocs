@@ -1,4 +1,17 @@
-import { ModelProviders } from '@/types';
+import { ModelProviders, CustomProviderConfig } from '@/types';
+
+// 创建自定义模型配置的辅助函数
+export const createCustomProvider = (
+  name: string,
+  baseUrl: string,
+  model: string
+): CustomProviderConfig => ({
+  id: `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+  name,
+  baseUrl,
+  model,
+  isCustom: true,
+});
 
 export const MODEL_PROVIDERS: ModelProviders = {
   openai: {

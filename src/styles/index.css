@@ -1327,6 +1327,73 @@ body {
     opacity: 0.7;
 }
 
+/* 自定义模型样式 */
+.custom-provider-info {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.custom-provider-info div {
+    margin-bottom: 0.5rem;
+}
+
+.custom-provider-info div:last-child {
+    margin-bottom: 0;
+}
+
+.custom-provider-info strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.btn-delete {
+    background: var(--error-color);
+    border: 1px solid var(--error-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.custom-model-form .setting-item {
+    margin-bottom: 1.2rem;
+}
+
+.custom-model-form .setting-item:last-child {
+    margin-bottom: 0;
+}
+
+/* 新建自定义模型按钮样式 */
+select option[value="create_custom"] {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    color: #1976d2;
+    font-weight: 500;
+}
+
+/* 模态框标题动态样式 */
+.modal-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* 自定义模型标识样式 */
+option[value^="custom_"] {
+    background: #fff3cd;
+    color: #856404;
+}
+
 /* Toast 通知样式 */
 .toast {
     position: fixed;

@@ -57,14 +57,16 @@ export const useAnalysis = () => {
       setAnalysisProgress({ percentage: 60, message: "正在调用AI分析..." });
 
       // 调用 AI API
-      const result = await APIService.callAI({
-        systemPrompt: promptConfig.prompt,
-        content: fileContent,
-        provider: currentProvider,
-        apiKey: settings.apiKey,
-        baseUrl: settings.baseUrl,
-        model: settings.model,
-      });
+      const result = await APIService.callAIWithProvider(
+        currentProvider,
+        promptConfig.prompt,
+        fileContent,
+        {
+          apiKey: settings.apiKey,
+          baseUrl: settings.baseUrl,
+          model: settings.model,
+        }
+      );
 
       setAnalysisProgress({
         percentage: 90,
