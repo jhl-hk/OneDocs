@@ -1,5 +1,4 @@
-![OneDocs](https://socialify.git.ci/LYOfficial/OneDocs/image?description=1&font=KoHo&forks=1&issues=1&language=1&logo=https%3A%2F%2Fimg.1n.hk%2Ff%2F2025%2F10%2F09%2F68e785e2743a1.png&name=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Auto)
-
+![OneDocs](https://socialify.git.ci/LYOfficial/OneDocs/image?description=1&font=KoHo&forks=1&issues=1&language=1&logo=https%3A%2F%2Foss.1n.hk%2Flyofficial%2Fimages%2Ficon.png&name=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Auto)
 
 # OneDocs
 
