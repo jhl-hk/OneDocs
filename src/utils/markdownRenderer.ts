@@ -112,7 +112,7 @@ export class MarkdownRenderer {
    * @returns 降级后的Markdown内容
    */
   static downgradeHeadings(markdown: string): string {
-    return markdown.replace(/^(#{1,6})\s+(.+)$/gm, (match, hashes, text) => {
+    return markdown.replace(/^(#{1,6})\s+(.+)$/gm, (_, hashes, text) => {
       // 在每个#前再加一个#，实现降级
       return `${hashes}# ${text}`;
     });
